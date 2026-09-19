@@ -1,0 +1,53 @@
+
+
+------------
+Dependencies
+------------
+
+FastLED
+
+digitalWriteFast
+
+-----------
+Compilation
+-----------
+
+1) Compilation flags
+
+Edit initial Arduino directory (after installation):
+/usr/share/arduino/hardware/arduino/avr/platform.txt
+
+Or last Arduino source code (after updates):
+/home/guillaume/.arduino15/packages/arduino/hardware/avr/1.8.6/platform.txt
+
+# https://www.elektormagazine.com/labs/arduino-compiler-optimizations-for-faster-smaller-code
+
+# optimize_level = '-O0'
+# optimize_level = '-O1'
+# optimize_level = '-O2'
+# optimize_level = '-O3'
+optimize_level = '-Os'
+# optimize_level = '-Ofast'
+
+-Os -> {optimize_level}
+
+2) Short enums
+
+-fshort-enums
+
+-------------------
+Arduino source code
+-------------------
+
+1) Serial buffer size
+
+Edit initial Arduino source code (after installation):
+/usr/share/arduino/hardware/arduino/avr/cores/arduino/HardwareSerial.h
+
+Or last Arduino source code (after updates):
+/home/guillaume/.arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/HardwareSerial.h
+
+#define SERIAL_RX_BUFFER_SIZE 512
+
+
+

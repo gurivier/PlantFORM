@@ -1,0 +1,43 @@
+
+== 1 ===================================
+
+$ cd /home/pi/
+
+$ python3 -m venv --system-site-packages /home/pi/prototypes
+
+$ cd /home/pi/prototypes/
+
+$ ./bin/pip3 install nuitka
+
+== 2 ===================================
+
+$ cd /home/pi/prototypes/
+
+$ sudo su
+
+# apt install patchelf
+# apt install zerofree
+
+# ln -s /home/pi-groupX /home/pi
+
+# raspi-config
+  > (3) Interface Options
+  > (I6) Serial Port
+  > (?) Serial Console (Login Shell): No
+  > (?) Serial Port Hardware: Yes
+# reboot
+
+// source env/bin/activate
+// pip3 install RPi.GPIO
+
+== 3 ===================================
+
+$ cd /home/pi/prototypes/plantform/
+
+../bin/python3 -m nuitka --follow-imports --mode=standalone plantform-controller.py
+
+../bin/python3 -m nuitka --follow-imports --mode=onefile plantform-controller.py
+
+
+
+
