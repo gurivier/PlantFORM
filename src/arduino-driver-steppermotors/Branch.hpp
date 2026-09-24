@@ -73,6 +73,15 @@ public:
     this->maxFailedSteps = steps ;
   }
 
+  inline void sendCurPos()
+  {
+    Serial.print(F("<j|")) ;
+    Serial.print(this->num) ;
+    Serial.print(F("|")) ;
+    Serial.print(this->posCur) ;
+    Serial.print(F(">")) ;
+  }
+  
 protected:
 
   //== Methods
@@ -99,6 +108,13 @@ protected:
     Serial.print(F(">")) ;
   }
 
+  inline void done()
+  {
+    Serial.print(F("<d|")) ;
+    Serial.print(this->num) ;
+    Serial.print(F(">")) ;
+  }
+  
   inline bool stop ()
   {
     return stopPinDigitalRead() == LOW ;

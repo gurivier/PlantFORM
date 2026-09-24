@@ -98,9 +98,6 @@ bool Branch::arduinoUpdatePos ()
   if (this->posSensorStateNew != this->posSensorStateCur && this->posSensorStateCur == this->posSensorStatePrev) { // && this->posSensorStateCur == this->posSensorStatePrev
     this->posCur += (this->dir == DIR_UP) ? 1 : -1 ;
     moved = true;
-    Serial.print(F("pos="));
-    Serial.print(this->posCur);
-    Serial.print(F("\n"));
   }
   else {
     moved = false;
@@ -158,7 +155,7 @@ void Branch::run ()
       POP_EVENT(MoveEvent, this->firstEvent) ;
       //set_led (2, 255, 0, 0) ; // R
       this->end_of_motion();
-   }
+    }
   }
   else if (this->firstEvent != NULL) { // STATE_WAIT and EVENT in stack
     this->state = STATE_MOVE ;

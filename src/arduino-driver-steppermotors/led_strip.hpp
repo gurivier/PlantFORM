@@ -1,6 +1,7 @@
 #ifndef LED_STRIP_HPP
 #define LED_STRIP_HPP
 
+#include <Arduino.h>
 
 //-- DATA STRUCTURES
 
@@ -33,20 +34,20 @@ void init_leds() ;
 
 // num : 0  =>  all LEDS
 //     : 1..10 => one LED
-void set_led_rgb (unsigned char hour, unsigned char r, unsigned char g, unsigned char b) ;
-void set_led (unsigned char hour, unsigned char h, unsigned char s, unsigned char v) ;
+void set_led_rgb (uint8_t hour, uint8_t r, uint8_t g, uint8_t b) ;
+void set_led (uint8_t hour, uint8_t h, uint8_t s, uint8_t v) ;
 
-void set_blink_period_ms (unsigned short period_ms) ;
+void set_blink_period_ms (uint16_t period_ms) ;
 
-void add_led_start_blink_event (short int *values) ;
+void add_led_start_blink_event (int16_t *values) ;
 
-void add_led_stop_blink_event (short int *values) ;
+void add_led_stop_blink_event (int16_t *values) ;
 
-void add_led_color_event (unsigned char hour, unsigned char r, unsigned char g, unsigned char b) ;
+void add_led_color_event (uint8_t hour, uint8_t r, uint8_t g, uint8_t b) ;
 
-void add_led_color_event (short int *values) ;
+void add_led_color_event (int16_t *values) ;
 
-void add_led_wait_event (unsigned short int delay_ms) ;
+void add_led_wait_event (uint16_t delay_ms) ;
 
 void run_leds () ;
 

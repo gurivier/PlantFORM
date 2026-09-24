@@ -3,6 +3,7 @@
 
 #include "Branch.hpp"
 #include "led_strip.hpp"
+#include "energyshape.hpp"
 
 //-- MACRO CONSTANTS
 
@@ -71,6 +72,13 @@ uint8_t getId (int id1, int id2, int id3)
   res += (id2 == HIGH) ? 2 : 0 ;  
   res += (id3 == HIGH) ? 4 : 0 ;  
   return res ;
+}
+
+void ready()
+{
+  Serial.print(F("<r|")) ;
+  Serial.print(arduino_id) ;
+  Serial.print(F(">")) ;
 }
 
 void set_microstepping (uint8_t mode) 
@@ -154,10 +162,7 @@ void setup ()
   // Init board
   if (IS_LED_BOARD()) { // LED board
     init_leds() ;
-    //set_led_rgb (1, 0, 255, 0) ;
-    //delay(1000);
-    //set_led_rgb (0, 0, 0, 0) ;
-    //set_ledv (0, H_RED, 255, 255) ;
+    energyshape_init();
   }
   else { // Branch boards
     pinMode(MS1_PIN, OUTPUT) ;
@@ -213,12 +218,27 @@ void treat_frame_values (int16_t *values)
    }
   break;
 
+  case 'B':
+    if (IS_LED_BOARD()) {
+      uint8_t val = values[1] ;
+      energyshape_set_brightness(val);
+   }
+  break;
+
   case 'e': // end of motion
    if (IS_LED_BOARD()) {
       add_led_stop_blink_event(values+1) ;
    }
   break;
 
+  case 'i': // Get one motor position value
+   num = values[1] ;
+   id = ((num - 1) * .5) + 1 ;
+   if (IS_THIS_BOARD(id)) {
+     branches[num % 2].sendCurPos() ;
+   }
+  break;
+  
   case 'p': // Set one motor position value (without moving)
    num = values[1] ;
    id = ((num - 1) * .5) + 1 ;
@@ -248,6 +268,12 @@ void treat_frame_values (int16_t *values)
       //v = values[4] ;
       //add_led_color_event (hour, h, s, v) ;
       add_led_color_event (values+1) ;
+    }
+  break;
+
+  case 'g': // Set one LED color (hour 0 => give the color to all LEDs)
+    if (IS_LED_BOARD()) {
+      energyshape_set_gain (values[1]) ;
     }
   break;
 
@@ -387,7 +413,7 @@ void treat_frame_values (int16_t *values)
     }
   break;
 
-  case 'K': // blink period
+  case 'K': // pos max
     if (IS_LED_BOARD()) {
       set_blink_period_ms(values[1]) ;
     }
