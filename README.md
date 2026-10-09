@@ -19,6 +19,7 @@ Documentation is released under the [CC BY-SA 4.0](https://creativecommons.org/l
 
 * 0.9.3 (2026-10-09)
   * Fix LEDs' blinking control
+  * Update Shell scripts
 * 0.9.2 (2026-09-24)
   * Integration of EnergySHAPE into the C++ Arduino driver
 * 0.9.1 (2026-09-19): First publication
