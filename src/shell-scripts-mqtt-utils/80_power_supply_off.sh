@@ -5,6 +5,6 @@
 
 pname='plantform1'
 
-echodate "Supply $pname"
+echodate "[$pname] Power supply OFF"
 
-mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|supply|on>"
+mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|supply|off>"

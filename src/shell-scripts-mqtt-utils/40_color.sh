@@ -5,7 +5,7 @@
 
 pname='plantform1'
 
-echodate "Set color to $pname"
+echodate "[$pname] Set color"
 
 mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|color|8|96|255|255>"  ; sleep 2
 mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|color|9|96|255|255>"  ; sleep 2

@@ -5,7 +5,7 @@
 
 pname='plantform1'
 
-echodate "Set variations to $pname"
+echodate "[$pname] Set variations"
 
 echodate "==V0==" ; mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|variation|0|play>"    ; sleep 40 ;  bip
 echodate "==V1==" ; mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|variation|1|play>"    ; sleep 40 ;  bip

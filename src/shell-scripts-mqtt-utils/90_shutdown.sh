@@ -5,7 +5,7 @@
 
 pname='plantform1'
 
-echodate "Powering off $pname"
+echodate "[$pname] Shutdown"
 
 mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|shutdown>"
 

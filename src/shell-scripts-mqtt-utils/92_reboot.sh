@@ -5,7 +5,7 @@
 
 pname='plantform1'
 
-echodate "Reboot $pname"
+echodate "[$pname] Reboot"
 
 mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|reboot>"
 

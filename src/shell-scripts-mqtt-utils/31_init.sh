@@ -5,6 +5,6 @@
 
 pname='plantform1'
 
-echodate "Init $pname"
+echodate "[$pname] Init"
 
 mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|init|0>"

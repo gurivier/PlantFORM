@@ -5,6 +5,6 @@
 
 pname='plantform1'
 
-echodate "Reset $pname"
+echodate "[$pname] Reset"
 
 mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|reset|0>"
