@@ -53,6 +53,7 @@
 static FILE uartout = {0} ;
 static int uart_putchar (char c, FILE *stream) {
   Serial.write(c) ;
+  Serial.flush() ;
   return 0 ;
 }
 #endif
@@ -79,6 +80,7 @@ void ready()
   Serial.print(F("<r|")) ;
   Serial.print(arduino_id) ;
   Serial.print(F(">")) ;
+  Serial.flush() ;
 }
 
 void set_microstepping (uint8_t mode) 
@@ -112,6 +114,7 @@ void set_microstepping (uint8_t mode)
     break;
     default:
       Serial.print(F("Unknown mode\n")) ;
+      Serial.flush() ;
       ms1 = HIGH ;
       ms2 = HIGH ;
       ms3 = HIGH ;
@@ -211,9 +214,10 @@ void treat_frame_values (int16_t *values)
   
   switch (values[0]) {
 
-  case 'b': // blink
+  case 'b': // Start LEDs' blinking
    if (IS_LED_BOARD()) {
       Serial.print(F("Must blink")) ;
+      Serial.flush() ;
       add_led_start_blink_event(values+1) ;
    }
   break;
@@ -222,10 +226,14 @@ void treat_frame_values (int16_t *values)
     if (IS_LED_BOARD()) {
       uint8_t val = values[1] ;
       energyshape_set_brightness(val);
-   }
+    }
   break;
 
   case 'e': // end of motion
+    // nothing
+    break;
+  
+  case 's': // Stop LEDs' blinking
    if (IS_LED_BOARD()) {
       add_led_stop_blink_event(values+1) ;
    }
@@ -423,6 +431,7 @@ void treat_frame_values (int16_t *values)
     Serial.print(F("Unknown letter:")) ;
     Serial.print(values[0]) ;
     Serial.print(F("\n")) ;
+    Serial.flush() ;
   } 
 }
 
@@ -447,6 +456,7 @@ void receive_frame_from_serial_and_treat_values ()
       //pbuf = buf ;
       //*pbuf++ = '<' ;
       Serial.print('<');
+      Serial.flush() ;
       //i = 0 ;
       pt_values = values ;
       sign = 1 ;
@@ -462,6 +472,7 @@ void receive_frame_from_serial_and_treat_values ()
     // Read values
     if ((b = Serial.read()) != '>') {
       Serial.write(b);
+      Serial.flush() ;
       if (b == '<') {
         //pbuf = buf ;
         //*pbuf++ = '<' ;
@@ -502,6 +513,7 @@ void receive_frame_from_serial_and_treat_values ()
 
       // Send to next board
       Serial.print('>');
+      Serial.flush() ;
       //Serial.println(buf) ;
 
       //printf("arduino_id=%d\n", arduino_id) ;

@@ -128,6 +128,8 @@ def play_variation(PF, variation, illuminated):
             PF.blink_led(hour, blink_color)
         PF.move_motor_to_position(hour, position)
         num = PF.wait_end_of_motion()
+        if illuminated:
+            PF.blink_led_stop(hour)
         print(f'motion done: {num}')
         #time.sleep(0.02)
         hour += 1
@@ -153,6 +155,7 @@ def play_reset(PF):
         PF.blink_led(hour, blink_color)
         PF.reset_motor_to_zero_position(hour)
         num = PF.wait_end_of_motion()
+        PF.blink_led_stop(hour)
         print(f'motion done: {num}')
         #time.sleep(0.2)
 
@@ -162,6 +165,7 @@ def play_init(PF):
         PF.blink_led(hour, blink_color)
         PF.move_motor_to_position(hour, 0)
         num = PF.wait_end_of_motion()
+        PF.blink_led_stop(hour)
         PF.set_led_color(hour, (0, 0, 0))
         print(f'motion done: {num}')
         #time.sleep(0.2)
@@ -212,7 +216,7 @@ def treat(PF, msg):
                 rates = [ float(buf[2]), float(buf[3]), float(buf[4]), float(buf[5]), float(buf[6]), float(buf[7]), float(buf[8]), float(buf[9]), float(buf[10]), float(buf[11]) ]
                 #mode = buf[12]
                 #illuminated = (buf[13] == 'light_on')
-                illuminated = False
+                illuminated = True
                 print(f'set variation {action} {rates}')
                 if action == 'update-play':
                     play_variation(PF, rates, illuminated)
@@ -365,12 +369,16 @@ def get_program_parameters():
 def run_from_prompt(PF):
     print('>> PROMPT MODE <<')
     time.sleep(10)
-    while (True):
+    is_running = True 
+    while (is_running):
         prompt = input('Give bytes: ')
-        messages = prompt.split('&')
-        for message in messages:
-            print(f'Sending command = {message}')
-            treat(PF, message)
+        if prompt in ('q', 'Q', 'exit', 'quit'):
+            is_running = False
+        else:
+            messages = prompt.split('&')
+            for message in messages:
+                print(f'Sending command = {message}')
+                treat(PF, message)
         
 def run_test(PF):
     time.sleep(1)
@@ -497,6 +505,7 @@ def main():
             PF.blink_led(hour, blink_color)
             PF.move_motor_to_position(hour, position)
             num = PF.wait_end_of_motion()
+            PF.blink_led_stop(hour)
             print(f'motion done: {num}')
         elif args.subparser_name == 'color':
             h, s, l = args.color

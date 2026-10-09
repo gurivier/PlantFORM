@@ -100,11 +100,11 @@ void energyshape_set_gain(char value) { // [-10, +10] + 32 + 64
   }
 
   if (value != 64) {
-    if (value == 0) {
-      l = 0;
-      setLevel(l, H_HONEY, 255, es_brightness); // H S L
-    }
-    else if (value < 0) {
+
+    l = 0;
+    setLevel(l, H_HONEY, 255, es_brightness); // H S L
+      
+    if (value < 0) {
       if (value < -10) {
         value = -10;
       }

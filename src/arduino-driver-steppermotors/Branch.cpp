@@ -59,6 +59,7 @@ void Branch::addEvent (uint16_t posDest)
   
   if ((evt = (MoveEvent)malloc (sizeof(struct move_event))) == NULL) {
     Serial.print(F("Allocation error\n")) ;
+    Serial.flush();
   }
   else { 
     evt->posDest = (posDest > this->posMax) ? this->posMax : posDest ;

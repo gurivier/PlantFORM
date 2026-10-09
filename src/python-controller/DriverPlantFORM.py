@@ -64,8 +64,9 @@ class DriverPlantFORM:
         
     def wait_end_of_motion(self):
         while True:
-            b = self.serial_port.read().decode()
-            if b == '<':
+            b = self.serial_port.read()
+            #print(f'received: {b}')
+            if b != -1 and b.decode() == '<':
                 b = self.serial_port.read().decode()
                 if b == 'e':
                     b = self.serial_port.read().decode() # '|'
@@ -81,8 +82,9 @@ class DriverPlantFORM:
         
     def wait_reply_cur_position(self):
         while True:
-            b = self.serial_port.read().decode()
-            if b == '<':
+            b = self.serial_port.read()
+            #print(f'received: {b}')
+            if b != -1 and b.decode() == '<':
                 b = self.serial_port.read().decode()
                 if b == 'j':
                     b = self.serial_port.read().decode() # '|'
@@ -137,6 +139,11 @@ class DriverPlantFORM:
         h, s, v = color
         self.__send(f'<{code}|{num}|{h}|{s}|{v}>')
 
+    def blink_led_stop(self, hour):
+        code = 's'
+        num = self.__hour_to_num(hour)
+        self.__send(f'<{code}|{num}>')
+        
     def switch_power_supply(self, enable):
         if enable: #-- Turn power on
             GPIO.output(SWITCH_ARDUINO_PIN, GPIO.HIGH)
@@ -300,6 +307,8 @@ class DriverPlantFORM:
         
     def __send(self, frame):
         self.serial_port.write(frame.encode())
+        self.serial_port.flush()
+        time.sleep(0.1)
 
 if __name__ == '__main__':
     PF = DriverPlantFORM()

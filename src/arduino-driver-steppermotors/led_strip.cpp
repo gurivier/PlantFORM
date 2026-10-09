@@ -96,6 +96,7 @@ void add_led_start_blink_event (int16_t *values) {
 
   if ((evt = (LEDEvent)malloc (sizeof(struct led_event))) == NULL) {
     Serial.print(F("Allocation error\n")) ;
+    Serial.flush();
   }
   else {
     evt->type = LED_EVENT_TYPE_START_BLINK ;
@@ -112,6 +113,7 @@ void add_led_stop_blink_event (int16_t *values) {
 
   if ((evt = (LEDEvent)malloc (sizeof(struct led_event))) == NULL) {
     Serial.print(F("Allocation error\n")) ;
+    Serial.flush();
   }
   else {
     evt->type = LED_EVENT_TYPE_STOP_BLINK ;
@@ -125,6 +127,7 @@ void add_led_color_event (uint8_t hour, uint8_t h, uint8_t s, uint8_t v) {
 
   if ((evt = (LEDEvent)malloc (sizeof(struct led_event))) == NULL) {
     Serial.print(F("Allocation error\n")) ;
+    Serial.flush();
   }
   else {
     evt->type = LED_EVENT_TYPE_COLOR ;
@@ -141,6 +144,7 @@ void add_led_color_event (int16_t *values) {
 
   if ((evt = (LEDEvent)malloc (sizeof(struct led_event))) == NULL) {
     Serial.print(F("Allocation error\n")) ;
+    Serial.flush();
   }
   else {
     evt->type = LED_EVENT_TYPE_COLOR ;
@@ -157,6 +161,7 @@ void add_led_wait_event (uint16_t delay_ms) {
 
   if ((evt = (LEDEvent)malloc (sizeof(struct led_event))) == NULL) {
     Serial.print(F("Allocation error\n")) ;
+    Serial.flush();
   }
   else {
     evt->type = LED_EVENT_TYPE_WAIT ;
@@ -222,6 +227,7 @@ void run_leds () {
     break ;
     default:
       Serial.print(F("Unknown LED event.")) ;
+      Serial.flush();
     }
     POP_EVENT(LEDEvent, firstLEDEvent) ;
   }
