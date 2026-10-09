@@ -8,7 +8,7 @@ def get_access_point_ip():
         if ip[0:3] == '192':
             gateway = ip
     return gateway
-            
+
 if __name__ == '__main__':
     import sys
     ap_ip = get_access_point_ip()

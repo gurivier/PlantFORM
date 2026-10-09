@@ -126,12 +126,12 @@ def play_variation(PF, variation, illuminated):
             color = give_color(rate, get_factor(variation))
             PF.set_led_color(hour, color)
             PF.blink_led(hour, blink_color)
-        PF.move_motor_to_position(hour, position)
-        num = PF.wait_end_of_motion()
+            PF.move_motor_to_position(hour, position)
+            num = PF.wait_end_of_motion()
         if illuminated:
             PF.blink_led_stop(hour)
-        print(f'motion done: {num}')
-        #time.sleep(0.02)
+            print(f'motion done: {num}')
+            #time.sleep(0.02)
         hour += 1
 
 def set_variation_values(PF, variation, illuminated):
@@ -143,9 +143,9 @@ def set_variation_values(PF, variation, illuminated):
             color = give_color(rate, get_factor(variation))
             PF.set_led_color(hour, color)
             time.sleep(0.03)
-        PF.set_motor_position_value(hour, position)
-        time.sleep(0.02)
-        hour += 1
+            PF.set_motor_position_value(hour, position)
+            time.sleep(0.02)
+            hour += 1
 
 def play_reset(PF):
     for hour in range(17, 7, -1):
@@ -222,7 +222,7 @@ def treat(PF, msg):
                     play_variation(PF, rates, illuminated)
                 elif action == 'update-values':
                     set_variation_values(PF, rates, illuminated)
-                PF.save()
+                    PF.save()
             elif action == 'fold':
                 hour = int(buf[2])
                 position = int(buf[3])
@@ -268,7 +268,7 @@ def treat(PF, msg):
                     PF.set_max_positions(pos_max)
                 else:
                     PF.set_max_position(num, pos_max)
-                time.sleep(0.03)
+                    time.sleep(0.03)
     else:
         print('Bad message format.')
         
@@ -379,7 +379,7 @@ def run_from_prompt(PF):
             for message in messages:
                 print(f'Sending command = {message}')
                 treat(PF, message)
-        
+                
 def run_test(PF):
     time.sleep(1)
     
@@ -489,8 +489,8 @@ def main():
     PF.set_max_positions(220)
     for (num, steps) in max_positions:
         PF.set_max_position(num, steps)
-    PF.set_max_failed_steps(500)
-    PF.set_blink_period_ms(200)
+        PF.set_max_failed_steps(500)
+        PF.set_blink_period_ms(200)
 
     print(PF.pos_max)
     

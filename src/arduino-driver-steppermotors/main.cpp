@@ -87,37 +87,37 @@ void set_microstepping (uint8_t mode)
 {
   uint8_t ms1, ms2, ms3 ;
   switch (mode) {
-    case 1:
-      ms1 = LOW ;
-      ms2 = LOW ;
-      ms3 = LOW ;
+  case 1:
+    ms1 = LOW ;
+    ms2 = LOW ;
+    ms3 = LOW ;
     break;
-    case 2:
-      ms1 = HIGH ;
-      ms2 = LOW ;
-      ms3 = LOW ;
+  case 2:
+    ms1 = HIGH ;
+    ms2 = LOW ;
+    ms3 = LOW ;
     break;
-    case 4:
-      ms1 = LOW ;
-      ms2 = HIGH ;
-      ms3 = LOW ;
+  case 4:
+    ms1 = LOW ;
+    ms2 = HIGH ;
+    ms3 = LOW ;
     break;
-    case 8:
-      ms1 = HIGH ;
-      ms2 = HIGH ;
-      ms3 = LOW ;
+  case 8:
+    ms1 = HIGH ;
+    ms2 = HIGH ;
+    ms3 = LOW ;
     break;
-    case 16:
-      ms1 = HIGH ;
-      ms2 = HIGH ;
-      ms3 = HIGH ;
+  case 16:
+    ms1 = HIGH ;
+    ms2 = HIGH ;
+    ms3 = HIGH ;
     break;
-    default:
-      Serial.print(F("Unknown mode\n")) ;
-      Serial.flush() ;
-      ms1 = HIGH ;
-      ms2 = HIGH ;
-      ms3 = HIGH ;
+  default:
+    Serial.print(F("Unknown mode\n")) ;
+    Serial.flush() ;
+    ms1 = HIGH ;
+    ms2 = HIGH ;
+    ms3 = HIGH ;
   }
   digitalWriteFast(MS1_PIN, ms1) ;
   digitalWriteFast(MS2_PIN, ms2) ;
@@ -215,58 +215,58 @@ void treat_frame_values (int16_t *values)
   switch (values[0]) {
 
   case 'b': // Start LEDs' blinking
-   if (IS_LED_BOARD()) {
+    if (IS_LED_BOARD()) {
       Serial.print(F("Must blink")) ;
       Serial.flush() ;
       add_led_start_blink_event(values+1) ;
-   }
-  break;
+    }
+    break;
 
   case 'B':
     if (IS_LED_BOARD()) {
       uint8_t val = values[1] ;
       energyshape_set_brightness(val);
     }
-  break;
+    break;
 
   case 'e': // end of motion
     // nothing
     break;
   
   case 's': // Stop LEDs' blinking
-   if (IS_LED_BOARD()) {
+    if (IS_LED_BOARD()) {
       add_led_stop_blink_event(values+1) ;
-   }
-  break;
+    }
+    break;
 
   case 'i': // Get one motor position value
-   num = values[1] ;
-   id = ((num - 1) * .5) + 1 ;
-   if (IS_THIS_BOARD(id)) {
-     branches[num % 2].sendCurPos() ;
-   }
-  break;
+    num = values[1] ;
+    id = ((num - 1) * .5) + 1 ;
+    if (IS_THIS_BOARD(id)) {
+      branches[num % 2].sendCurPos() ;
+    }
+    break;
   
   case 'p': // Set one motor position value (without moving)
-   num = values[1] ;
-   id = ((num - 1) * .5) + 1 ;
-   if (IS_THIS_BOARD(id)) {
-     pos = values[2] ;
-     branches[num % 2].setCurPosValue(pos) ;
-   }
-  break;
+    num = values[1] ;
+    id = ((num - 1) * .5) + 1 ;
+    if (IS_THIS_BOARD(id)) {
+      pos = values[2] ;
+      branches[num % 2].setCurPosValue(pos) ;
+    }
+    break;
 
   case 'P': // Set all motors position values (without moving)
-   if (IS_MOTOR_BOARD()) {
-    pt_values = values + arduino_id + arduino_id ;
-    // motor above
-    //pos_dest = values[arduino_id + arduino_id] ;
-    branches[0].setCurPosValue(*pt_values) ;
-    // motor below
-    //pos_dest = values[(arduino_id + arduino_id) - 1] ;
-    branches[1].setCurPosValue(*(pt_values-1)) ;
-   }
-  break;
+    if (IS_MOTOR_BOARD()) {
+      pt_values = values + arduino_id + arduino_id ;
+      // motor above
+      //pos_dest = values[arduino_id + arduino_id] ;
+      branches[0].setCurPosValue(*pt_values) ;
+      // motor below
+      //pos_dest = values[(arduino_id + arduino_id) - 1] ;
+      branches[1].setCurPosValue(*(pt_values-1)) ;
+    }
+    break;
  
   case 'l': // Set one LED color (hour 0 => give the color to all LEDs)
     if (IS_LED_BOARD()) {
@@ -277,19 +277,19 @@ void treat_frame_values (int16_t *values)
       //add_led_color_event (hour, h, s, v) ;
       add_led_color_event (values+1) ;
     }
-  break;
+    break;
 
   case 'g': // Set one LED color (hour 0 => give the color to all LEDs)
     if (IS_LED_BOARD()) {
       energyshape_set_gain (values[1]) ;
     }
-  break;
+    break;
 
   case 'w': // Sleep LEDs event
     if (IS_LED_BOARD()) {
       add_led_wait_event (values[1]) ;
     }
-  break;
+    break;
   
   case 'L': // Set all LEDs colors from vector
     if (IS_LED_BOARD()) {
@@ -304,18 +304,18 @@ void treat_frame_values (int16_t *values)
         add_led_color_event (j+1, *pt_values, *(pt_values+1), *(pt_values+2)) ;
       }
     }
-  break;
+    break;
   
   case 'm': // Move one motor
-     num = values[1] ;
-     id = ((num - 1)  * .5) + 1 ;
-     if (IS_THIS_BOARD(id)) {
-       pos_dest = values[2] ;
-       branches[num % 2].addEvent(pos_dest) ; // 0: motor above, 1: motor below
-       //set_led_rgb (0, 0, 0, 0) ;  
-       set_led_rgb (1, 0, 255, 0) ;    
-     }
-  break;
+    num = values[1] ;
+    id = ((num - 1)  * .5) + 1 ;
+    if (IS_THIS_BOARD(id)) {
+      pos_dest = values[2] ;
+      branches[num % 2].addEvent(pos_dest) ; // 0: motor above, 1: motor below
+      //set_led_rgb (0, 0, 0, 0) ;  
+      set_led_rgb (1, 0, 255, 0) ;    
+    }
+    break;
   
   case 'M': // Move all motors
     if (IS_MOTOR_BOARD()) {
@@ -329,7 +329,7 @@ void treat_frame_values (int16_t *values)
       //set_led_rgb (0, 0, 0, 0) ;  
       //set_led_rgb (1, 0, 255, 0) ;    
     }
-  break;
+    break;
   
   case 'c': // Set one LED color & move one motor (couple)
     if (IS_LED_BOARD()) {
@@ -341,20 +341,20 @@ void treat_frame_values (int16_t *values)
       add_led_color_event (values+1) ;
     }
     else { // motor board
-     num = values[1] ;
-     id = ((num - 1)  * .5) + 1 ;
-     if (IS_THIS_BOARD(id)) {
-       num = values[1] ;
-       pos_dest = values[2] ;
-       branches[num % 2].addEvent(pos_dest) ; // 0: motor above, 1: motor below
-       //set_led_rgb (0, 0, 0, 0) ;  
-       set_led_rgb (1, 0, 255, 0) ;
-     }
+      num = values[1] ;
+      id = ((num - 1)  * .5) + 1 ;
+      if (IS_THIS_BOARD(id)) {
+        num = values[1] ;
+        pos_dest = values[2] ;
+        branches[num % 2].addEvent(pos_dest) ; // 0: motor above, 1: motor below
+        //set_led_rgb (0, 0, 0, 0) ;  
+        set_led_rgb (1, 0, 255, 0) ;
+      }
     }
-  break;
+    break;
   
   case 'C': // Set all LEDs colors from vector & move motors from vector (couples)
-     if (IS_LED_BOARD()) {
+    if (IS_LED_BOARD()) {
       for (uint8_t j = 1 ; j <= NUM_HOURS ; j += 3) {
         //hour = j ;
         //h = values[NUM_MOTORS + j] ;
@@ -376,7 +376,7 @@ void treat_frame_values (int16_t *values)
       //set_led_rgb (0, 0, 0, 0) ;  
       set_led_rgb (1, 0, 255, 0) ;   
     }
-  break;
+    break;
 
   case 'z': // Reset one motor to zero position
     if (IS_MOTOR_BOARD()) {
@@ -386,46 +386,46 @@ void treat_frame_values (int16_t *values)
         branches[num % 2].resetToZeroPosition() ;
       }
     }
-  break;
+    break;
   
   case 'Z': // Reset all motors to zero position
     if (IS_MOTOR_BOARD()) {
       branches[0].resetToZeroPosition() ;
       branches[1].resetToZeroPosition() ;
     }
-  break;
+    break;
   
   case 'D': // steppers delay in nanoseconds
     if (IS_MOTOR_BOARD()) {
       set_delay_us(values[1]) ;
     }
-  break;
+    break;
   
   case 'S': // micro-steppring
     if (IS_MOTOR_BOARD()) {
       set_microstepping(values[1]) ;
     }
-  break;
+    break;
 
   case 'F': // max failed steps
     if (IS_MOTOR_BOARD()) {
       branches[0].setMaxFailedSteps(values[1]) ;
       branches[1].setMaxFailedSteps(values[1]) ;
     }
-  break;
+    break;
 
   case 'X': // pos max
     if (IS_MOTOR_BOARD()) {
       branches[0].setPosMax(values[1]) ;
       branches[1].setPosMax(values[1]) ;
     }
-  break;
+    break;
 
   case 'K': // pos max
     if (IS_LED_BOARD()) {
       set_blink_period_ms(values[1]) ;
     }
-  break;
+    break;
     
   default:
     Serial.print(F("Unknown letter:")) ;

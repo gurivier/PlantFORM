@@ -9,13 +9,13 @@ uint32_t Branch::step_period_us = 1000 ;
 //-- METHODS
 
 Branch::Branch ()
-: num(0),
-  firstEvent(NULL),
-  lastEvent(NULL),
-  posCur(0),
-  posMax(260),
-  maxFailedSteps(5),
-  state(STATE_WAIT)
+  : num(0),
+    firstEvent(NULL),
+    lastEvent(NULL),
+    posCur(0),
+    posMax(260),
+    maxFailedSteps(5),
+    state(STATE_WAIT)
 {
   // Nothing
 }
@@ -167,6 +167,6 @@ void Branch::run ()
     this->setDirection((this->posCur < this->firstEvent->posDest) ? DIR_UP : DIR_DOWN) ;
   }
 
-   //Serial.print(F("run end\n")) ;
+  //Serial.print(F("run end\n")) ;
 
 }

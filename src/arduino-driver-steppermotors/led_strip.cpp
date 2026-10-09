@@ -200,31 +200,31 @@ void run_leds () {
   if (firstLEDEvent != NULL) {
     switch (firstLEDEvent->type) {
     case LED_EVENT_TYPE_COLOR:
-    {
-      set_led(firstLEDEvent->value.color.hour, firstLEDEvent->value.color.h, firstLEDEvent->value.color.s, firstLEDEvent->value.color.v) ;
-    }
-    break ;
+      {
+        set_led(firstLEDEvent->value.color.hour, firstLEDEvent->value.color.h, firstLEDEvent->value.color.s, firstLEDEvent->value.color.v) ;
+      }
+      break ;
     case LED_EVENT_TYPE_WAIT:
-    {
-      delay(firstLEDEvent->value.delay_ms) ;
-    }
-    break ;   
+      {
+        delay(firstLEDEvent->value.delay_ms) ;
+      }
+      break ;   
     case LED_EVENT_TYPE_STOP_BLINK:
-    {
-      uint8_t j = firstLEDEvent->value.num - 1;
-      is_blinking[j] = false ;
-      set_led(j+1, colors[j].h, colors[j].s, colors[j].v) ;
-    }
-    break ;
+      {
+        uint8_t j = firstLEDEvent->value.num - 1;
+        is_blinking[j] = false ;
+        set_led(j+1, colors[j].h, colors[j].s, colors[j].v) ;
+      }
+      break ;
     case LED_EVENT_TYPE_START_BLINK:
-    {
-      uint8_t i = firstLEDEvent->value.color.hour - 1 ;
-      blinking_colors[i].h = firstLEDEvent->value.color.h ;
-      blinking_colors[i].s = firstLEDEvent->value.color.s ;
-      blinking_colors[i].v = firstLEDEvent->value.color.v ;
-      is_blinking[i] = true ;
-    }
-    break ;
+      {
+        uint8_t i = firstLEDEvent->value.color.hour - 1 ;
+        blinking_colors[i].h = firstLEDEvent->value.color.h ;
+        blinking_colors[i].s = firstLEDEvent->value.color.s ;
+        blinking_colors[i].v = firstLEDEvent->value.color.v ;
+        is_blinking[i] = true ;
+      }
+      break ;
     default:
       Serial.print(F("Unknown LED event.")) ;
       Serial.flush();

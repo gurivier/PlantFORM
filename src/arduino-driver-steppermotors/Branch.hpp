@@ -235,5 +235,4 @@ private:
   int8_t posSensorStateNew ; 
 };
 
-
 #endif /* BRANCH_HPP */

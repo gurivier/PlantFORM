@@ -79,7 +79,7 @@ class DriverPlantFORM:
                         else:
                             number = number * 10 + int(b)
                     return number
-        
+                
     def wait_reply_cur_position(self):
         while True:
             b = self.serial_port.read()
@@ -96,8 +96,8 @@ class DriverPlantFORM:
                             reading_number = False
                         else:
                             number = number * 10 + int(b)
-                    reading_position = True
-                    position = 0
+                            reading_position = True
+                            position = 0
                     while reading_position:
                         b = self.serial_port.read().decode()
                         if b == '>':
@@ -105,7 +105,7 @@ class DriverPlantFORM:
                         else:
                             position = position * 10 + int(b)                    
                     return (number, position)
-        
+                
     # Give color to one LED (0 means all LEDs with same color)
     # hour in [1..10]
     def set_led_color(self, hour, color_hsl):
@@ -186,7 +186,7 @@ class DriverPlantFORM:
             (n, p) = self.wait_reply_cur_position()
             print((n, p), end='')
             self.__record_cur_position(n, p)
-        print('')
+            print('')
             
     # move one motor to a position
     def move_motor_to_position(self, hour, pos10):
@@ -214,19 +214,19 @@ class DriverPlantFORM:
         h, s, l = color_hsl
         num = self.__hour_to_num(hour)
         self.__send(f'<{code}|{num}|{pos}|{h}|{s}|{l}>')
-    
+        
     def move_motors_to_positions_and_send_leds_colors(self, positions10, colors_hsl):
         code = 'C'
         values = '|'.join(str(self.__pos10_to_motor_position(num, positions10[num])) for num in range(0, len(positions10)))
         values += '|' + '|'.join('|'.join(str(c) for c in color) for color in colors_hsl)
         #print(values)
         self.__send(f'<{code}|{values}>')
-    
+        
     def reset_motor_to_zero_position(self, hour):
         code = 'z'
         num = self.__hour_to_num(hour)
         self.__send(f'<{code}|{num}>')
-    
+        
     def reset_motors_to_zero_position(self):
         code = 'Z'
         self.__send(f'<{code}>')
@@ -235,7 +235,7 @@ class DriverPlantFORM:
     def set_motors_delay_us(self, delay_us):
         code = 'D'
         self.__send(f'<{code}|{delay_us}>')
-    
+        
     # mode in 1, 2, 4, 8, 16
     def set_microstepping(self, mode):
         code = 'S'
@@ -270,9 +270,9 @@ class DriverPlantFORM:
             pos10 = 10
         elif pos10 < 0:
             pos10 = 0
-        pos_steps = self.pos_max[num] - int(self.pos_max[num] * pos10 / 10)
-        pos_steps = pos_steps if pos_steps <= self.pos_max[num] else self.pos_max[num]
-        print(f'position = {pos_steps} steps ')
+            pos_steps = self.pos_max[num] - int(self.pos_max[num] * pos10 / 10)
+            pos_steps = pos_steps if pos_steps <= self.pos_max[num] else self.pos_max[num]
+            print(f'position = {pos_steps} steps ')
         return pos_steps
 
     def __hour_to_num(self, hour):
@@ -291,20 +291,20 @@ class DriverPlantFORM:
             pos = self.cur_positions[num]
             print((num, pos), end='')
             self.__send(f'<{code}|{num}|{pos}>')
-        print('')
+            print('')
 
     def __serialize_cur_positions(self):
         import pickle
         with open('cur_positions.pkl', 'wb') as f:
             pickle.dump(self.cur_positions, f)
-        
+            
     def __unserialize_cur_positions(self):
         import pickle
         import os
         if os.path.isfile('cur_positions.pkl'):
             with open('cur_positions.pkl', 'rb') as f:
                 self.cur_positions = pickle.load(f)
-        
+                
     def __send(self, frame):
         self.serial_port.write(frame.encode())
         self.serial_port.flush()
