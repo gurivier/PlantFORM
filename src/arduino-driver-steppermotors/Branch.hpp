@@ -1,7 +1,9 @@
 #ifndef BRANCH_HPP
 #define BRANCH_HPP
 
-// 0: native, 1: fast, 2: fastio
+// 0: native
+// 1: fast
+// 2: fastio
 #define DIGITAL_IO_MODE 2
 
 #include <Arduino.h>

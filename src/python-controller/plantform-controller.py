@@ -70,7 +70,7 @@ blink_color = (16, 228, 0) # 164
 
 energy_rates = []
 leaf_positions = []
-led_colors = []
+trunk_led_colors = []
 
 #                      8h     9h     10h    11h    12h    13h    14h    15h    16h    17h
 energy_rates.append( [ 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000 ] ) # Index 0: min prod
@@ -83,7 +83,7 @@ energy_rates.append( [ 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1
 
 #for rates in energy_rates:
 #    leaf_positions.append( [ give_position(rate) for rate in rates ] )
-#    led_colors.append( [ give_color(rate) for rate in rates ] )
+#    trunk_led_colors.append( [ give_color(rate) for rate in rates ] )
     
 #print(energy_rates[0])
 #print(energy_rates[1])
@@ -124,12 +124,12 @@ def play_variation(PF, variation, illuminated):
         position = give_position(rate, get_factor(variation))
         if illuminated:
             color = give_color(rate, get_factor(variation))
-            PF.set_led_color(hour, color)
-            PF.blink_led(hour, blink_color)
+            PF.set_trunk_led_color(hour, color)
+            PF.blink_trunk_led_start(hour, blink_color)
             PF.move_motor_to_position(hour, position)
             num = PF.wait_end_of_motion()
         if illuminated:
-            PF.blink_led_stop(hour)
+            PF.blink_trunk_led_stop(hour)
             print(f'motion done: {num}')
             #time.sleep(0.02)
         hour += 1
@@ -141,7 +141,7 @@ def set_variation_values(PF, variation, illuminated):
         position = give_position(rate, get_factor(variation))
         if illuminated:
             color = give_color(rate, get_factor(variation))
-            PF.set_led_color(hour, color)
+            PF.set_trunk_led_color(hour, color)
             time.sleep(0.03)
             PF.set_motor_position_value(hour, position)
             time.sleep(0.02)
@@ -151,22 +151,22 @@ def play_reset(PF):
     for hour in range(17, 7, -1):
         print(f'reset {hour}h')
         color = (0, 0, 0)
-        PF.set_led_color(hour, color)
-        PF.blink_led(hour, blink_color)
+        PF.set_trunk_led_color(hour, color)
+        PF.blink_trunk_led_start(hour, blink_color)
         PF.reset_motor_to_zero_position(hour)
         num = PF.wait_end_of_motion()
-        PF.blink_led_stop(hour)
+        PF.blink_trunk_led_stop(hour)
         print(f'motion done: {num}')
         #time.sleep(0.2)
 
 def play_init(PF):
     for hour in range(17, 7, -1):
         print(f'init {hour}h')
-        PF.blink_led(hour, blink_color)
+        PF.blink_trunk_led_start(hour, blink_color)
         PF.move_motor_to_position(hour, 0)
         num = PF.wait_end_of_motion()
-        PF.blink_led_stop(hour)
-        PF.set_led_color(hour, (0, 0, 0))
+        PF.blink_trunk_led_stop(hour)
+        PF.set_trunk_led_color(hour, (0, 0, 0))
         print(f'motion done: {num}')
         #time.sleep(0.2)
 
@@ -197,26 +197,24 @@ def treat(PF, msg):
             elif action == 'supply220':
                 enable = (buf[2] == 'on')
                 PF.switch_power_supply220(enable)
-            elif action == 'variation':
+            elif action == 'variation-play' or action == 'variation-values':
                 index = in_range(int(buf[2]), 0, len(energy_rates))
-                mode = buf[3]
-                illuminated = (buf[4] == 'light_on') if len(buf) >= 5 else True
+                illuminated = (buf[3] == 'light_on') if len(buf) >= 4 else True
                 print(f'set variation {index} {mode}')
-                if mode == 'play':
+                if action == 'variation-play':
                     play_variation(PF, energy_rates[index], illuminated)
-                elif mode == 'values':
+                elif action == 'variation-values':
                     set_variation_values(PF, energy_rates[index], illuminated)
             elif action == 'gain':
-                value = int(buf[2])
-                PF.set_energyshape_gain(value)
+                day = int(buf[2])
+                value = int(buf[3])
+                PF.set_energyshape_gain(day, value)
             elif action == 'brightness':
                 value = int(buf[2])
                 PF.set_energyshape_brightness(value)
             elif action == 'update-play' or action == 'update-values':
                 rates = [ float(buf[2]), float(buf[3]), float(buf[4]), float(buf[5]), float(buf[6]), float(buf[7]), float(buf[8]), float(buf[9]), float(buf[10]), float(buf[11]) ]
-                #mode = buf[12]
-                #illuminated = (buf[13] == 'light_on')
-                illuminated = True
+                illuminated = (buf[12] == 'light_on') if len(buf) >= 13 else True
                 print(f'set variation {action} {rates}')
                 if action == 'update-play':
                     play_variation(PF, rates, illuminated)
@@ -227,7 +225,7 @@ def treat(PF, msg):
                 hour = int(buf[2])
                 position = int(buf[3])
                 print(f'fold {hour} {position}')
-                PF.blink_led(hour, blink_color)
+                PF.blink_trunk_led_start(hour, blink_color)
                 PF.move_motor_to_position(hour, position)
             elif action == 'color':
                 hour = int(buf[2])
@@ -235,14 +233,14 @@ def treat(PF, msg):
                 s = int(buf[4])
                 l = int(buf[5])
                 print(f'color {hour} {h} {s} {l}')
-                PF.set_led_color(hour, (h, s, l))
+                PF.set_trunk_led_color(hour, (h, s, l))
             elif action == 'reset':
                 hour = int(buf[2])
                 print(f'reset {hour}')
                 if hour == 0:
                     play_reset(PF)
                 else:
-                    PF.blink_led(hour, blink_color)
+                    PF.blink_trunk_led_start(hour, blink_color)
                     PF.reset_motor_to_zero_position(hour)
             elif action == 'init':
                 hour = int(buf[2])
@@ -250,8 +248,8 @@ def treat(PF, msg):
                 if hour == 0:
                     play_init(PF)
                 else:
-                    PF.set_led_color(hour, (0, 0, 0))
-                    PF.blink_led(hour, blink_color)
+                    PF.set_trunk_led_color(hour, (0, 0, 0))
+                    PF.blink_trunk_led_start(hour, blink_color)
                     PF.move_motor_to_position(hour, 0)
             elif action == 'microstepping':
                 delay_us = int(buf[2])
@@ -288,7 +286,7 @@ def run_from_mqtt(host, PF):
 
     # The callback for when a PUBLISH message is received from the server.
     def on_message(client, userdata, databytes):
-        msg = str(databytes.payload.decode())
+        msg = str(databytes.payload.decode()).lstrip()
         print(f'[{databytes.topic}] {msg}')
         if msg[0] == '<': 
             print(datagram)
@@ -325,7 +323,7 @@ def get_program_parameters():
     parser = argparse.ArgumentParser(
         prog='RPI Client',
         description='This program is an example of use of PlantSCREEN\'s driver.',
-        epilog='Guillaume RIVIERE, 2023')
+        epilog='Guillaume RIVIERE, 2023, 2026')
 
     subparsers = parser.add_subparsers(dest="subparser_name", help='sub-command help')
 
@@ -391,9 +389,9 @@ def run_test(PF):
     
     #for i in range(100):
     #    PF.send_led_color(8, (pf.H_BLUE, pf.S_MAX, pf.L_MAX))
-    #    PF.send_led_wait(400)
+    #    PF.send_trunk_led_wait_event(400)
     #    PF.send_led_color(8, (pf.H_GREEN, pf.S_MAX, pf.L_MAX))
-    #    PF.send_led_wait(400)
+    #    PF.send_trunk_led_wait_event(400)
     #    time.sleep(1)
     
     #PF.send_led_color(8, (pf.H_RED, pf.S_MED, pf.L_MED))
@@ -502,10 +500,10 @@ def main():
         elif args.subparser_name == 'fold':
             position = args.position[0]
             hour = args.hour[0]
-            PF.blink_led(hour, blink_color)
+            PF.blink_trunk_led_start(hour, blink_color)
             PF.move_motor_to_position(hour, position)
             num = PF.wait_end_of_motion()
-            PF.blink_led_stop(hour)
+            PF.led_blink_trunk_stop(hour)
             print(f'motion done: {num}')
         elif args.subparser_name == 'color':
             h, s, l = args.color

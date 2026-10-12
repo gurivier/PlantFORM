@@ -1,4 +1,4 @@
-#include "led_strip.hpp"
+//#include "led_strip.hpp"
 #include "Branch.hpp"
 #include "event_utils.h"
 
@@ -163,7 +163,7 @@ void Branch::run ()
     this->enableMotor() ;
     time_start = millis();
     //Serial.print(F("state WAITING: new event\n")) ;
-    set_led (2, 0, 0, 255) ; // B
+    //set_led (2, 0, 0, 255) ; // B
     this->setDirection((this->posCur < this->firstEvent->posDest) ? DIR_UP : DIR_DOWN) ;
   }
 

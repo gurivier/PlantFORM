@@ -2,8 +2,8 @@
 #include <digitalWriteFast.h>
 
 #include "Branch.hpp"
-#include "led_strip.hpp"
-#include "energyshape.hpp"
+#include "Trunk.h"
+#include "EnergySHAPE.h"
 
 //-- MACRO CONSTANTS
 
@@ -164,8 +164,10 @@ void setup ()
 
   // Init board
   if (IS_LED_BOARD()) { // LED board
-    init_leds() ;
-    energyshape_init();
+    Trunk.init_leds() ;
+    EnergySHAPE.init();
+    EnergySHAPE.setLuminosityForAll(80);
+    EnergySHAPE.setGainForAll(0, false);
   }
   else { // Branch boards
     pinMode(MS1_PIN, OUTPUT) ;
@@ -183,8 +185,8 @@ void setup ()
     branches[1].initPins(M1_STEP_PIN, M1_DIR_PIN, M1_SPEED_PIN, M1_STOP_PIN, M1_ENABLE_PIN) ;
                      
     // Debugging leds
-    init_leds() ;
-    set_led_rgb (arduino_id, 0, 0, 255) ;  
+    //init_leds() ;
+    //set_led_rgb (arduino_id, 0, 0, 255) ;  
   }
 
   //printf("RX buf: %d (must be 512)\n",  SERIAL_RX_BUFFER_SIZE);
@@ -218,14 +220,14 @@ void treat_frame_values (int16_t *values)
     if (IS_LED_BOARD()) {
       Serial.print(F("Must blink")) ;
       Serial.flush() ;
-      add_led_start_blink_event(values+1) ;
+      Trunk.add_led_start_blink_event(values+1) ;
     }
     break;
 
-  case 'B':
+  case 'B': // Set brightness
     if (IS_LED_BOARD()) {
       uint8_t val = values[1] ;
-      energyshape_set_brightness(val);
+      EnergySHAPE.setLuminosityForAll(val);
     }
     break;
 
@@ -235,7 +237,9 @@ void treat_frame_values (int16_t *values)
   
   case 's': // Stop LEDs' blinking
     if (IS_LED_BOARD()) {
-      add_led_stop_blink_event(values+1) ;
+      Trunk.add_led_stop_blink_event(
+                                     values+1 // hour
+                                     ) ;
     }
     break;
 
@@ -270,24 +274,25 @@ void treat_frame_values (int16_t *values)
  
   case 'l': // Set one LED color (hour 0 => give the color to all LEDs)
     if (IS_LED_BOARD()) {
-      //hour = values[1] ;
-      //h = values[2] ;
-      //s = values[3] ;
-      //v = values[4] ;
-      //add_led_color_event (hour, h, s, v) ;
-      add_led_color_event (values+1) ;
+      Trunk.add_led_color_event (
+                                 values+1 // address for the parameters [hour, h, s, v]
+                                 ) ;
     }
     break;
 
   case 'g': // Set one LED color (hour 0 => give the color to all LEDs)
     if (IS_LED_BOARD()) {
-      energyshape_set_gain (values[1]) ;
+      EnergySHAPE.setGainForDay(
+                                values[1], // day
+                                values[2], // gain
+                                true       // fade
+                                );
     }
     break;
 
   case 'w': // Sleep LEDs event
     if (IS_LED_BOARD()) {
-      add_led_wait_event (values[1]) ;
+      Trunk.add_led_wait_event (values[1]) ;
     }
     break;
   
@@ -301,7 +306,12 @@ void treat_frame_values (int16_t *values)
         //printf ("hour = %d\n", hour) ;
         //add_led_color_event (hour, h, s, v) ;
         pt_values = values+j+j+j+1 ;
-        add_led_color_event (j+1, *pt_values, *(pt_values+1), *(pt_values+2)) ;
+        Trunk.add_led_color_event (
+                                   j+1,            // hour
+                                   *pt_values,     // h
+                                   *(pt_values+1), // s
+                                   *(pt_values+2)  // v
+                                   ) ;
       }
     }
     break;
@@ -312,8 +322,8 @@ void treat_frame_values (int16_t *values)
     if (IS_THIS_BOARD(id)) {
       pos_dest = values[2] ;
       branches[num % 2].addEvent(pos_dest) ; // 0: motor above, 1: motor below
-      //set_led_rgb (0, 0, 0, 0) ;  
-      set_led_rgb (1, 0, 255, 0) ;    
+      //Trunk.set_led_rgb (0, 0, 0, 0) ;  
+      Trunk.set_led_rgb (1, 0, 255, 0) ;    
     }
     break;
   
@@ -326,19 +336,16 @@ void treat_frame_values (int16_t *values)
       // motor below
       //pos_dest = values[(arduino_id + arduino_id) - 1] ;
       branches[1].setCurPosValue(*(pt_values-1)) ;
-      //set_led_rgb (0, 0, 0, 0) ;  
-      //set_led_rgb (1, 0, 255, 0) ;    
+      //Trunk.set_led_rgb (0, 0, 0, 0) ;  
+      //Trunk.set_led_rgb (1, 0, 255, 0) ;    
     }
     break;
   
   case 'c': // Set one LED color & move one motor (couple)
     if (IS_LED_BOARD()) {
-      //hour = values[1] ;
-      //h = values[3] ;
-      //s = values[4] ;
-      //v = values[5] ;
-      //add_led_color_event (hour, h, s, v) ;
-      add_led_color_event (values+1) ;
+      Trunk.add_led_color_event (
+                                 values+1 // address for the parameters [hour, h, s, v]
+                                 ) ;
     }
     else { // motor board
       num = values[1] ;
@@ -347,8 +354,8 @@ void treat_frame_values (int16_t *values)
         num = values[1] ;
         pos_dest = values[2] ;
         branches[num % 2].addEvent(pos_dest) ; // 0: motor above, 1: motor below
-        //set_led_rgb (0, 0, 0, 0) ;  
-        set_led_rgb (1, 0, 255, 0) ;
+        //Trunk.set_led_rgb (0, 0, 0, 0) ;
+        Trunk.set_led_rgb (1, 0, 255, 0) ;
       }
     }
     break;
@@ -356,13 +363,13 @@ void treat_frame_values (int16_t *values)
   case 'C': // Set all LEDs colors from vector & move motors from vector (couples)
     if (IS_LED_BOARD()) {
       for (uint8_t j = 1 ; j <= NUM_HOURS ; j += 3) {
-        //hour = j ;
-        //h = values[NUM_MOTORS + j] ;
-        //s = values[NUM_MOTORS + j+1] ;
-        //v = values[NUM_MOTORS + j+2] ;
-        //add_led_event (hour, h, s, v) ;
         pt_values = values + NUM_MOTORS + j ;
-        add_led_color_event (j, *pt_values, *(pt_values+1), *(pt_values+2)) ;
+        Trunk.add_led_color_event (
+                                   j,              // hour
+                                   *pt_values,     // h
+                                   *(pt_values+1), // s
+                                   *(pt_values+2)  // v
+                                   ) ;
       }
     }
     else { // motor board
@@ -373,8 +380,8 @@ void treat_frame_values (int16_t *values)
       // motor below
       //pos_dest = values[(arduino_id + arduino_id) - 1] ;
       branches[1].setCurPosValue(*(pt_values-1)) ;
-      //set_led_rgb (0, 0, 0, 0) ;  
-      set_led_rgb (1, 0, 255, 0) ;   
+      //Trunk.set_led_rgb (0, 0, 0, 0) ;  
+      Trunk.set_led_rgb (1, 0, 255, 0) ;   
     }
     break;
 
@@ -423,7 +430,7 @@ void treat_frame_values (int16_t *values)
 
   case 'K': // pos max
     if (IS_LED_BOARD()) {
-      set_blink_period_ms(values[1]) ;
+      Trunk.set_blink_period_ms(values[1]) ;
     }
     break;
     
@@ -461,13 +468,13 @@ void receive_frame_from_serial_and_treat_values ()
       pt_values = values ;
       sign = 1 ;
       val = 0 ;
-      //set_led_rgb (3, 0, 0, 255) ; 
+      //Trunk.set_led_rgb (3, 0, 0, 255) ; 
     }
   }
   else {
     //Serial.print(F("find next chars\n")) ;
 
-    //set_led_rgb (4, 0, 0, 255) ;
+    //Trunk.set_led_rgb (4, 0, 0, 255) ;
     
     // Read values
     if ((b = Serial.read()) != '>') {
@@ -518,9 +525,9 @@ void receive_frame_from_serial_and_treat_values ()
 
       //printf("arduino_id=%d\n", arduino_id) ;
       //printf("id=%d\n", values[0]) ;
-      //set_led_rgb (values[0], 255, 0, 0) ; 
+      //Trunk.set_led_rgb (values[0], 255, 0, 0) ; 
 
-      //set_led_rgb (5, 0, 0, 255) ; 
+      //Trunk.set_led_rgb (5, 0, 0, 255) ; 
 
       //Serial.print(F("ready to treat\n")) ;
     
@@ -535,8 +542,8 @@ void loop ()
   //== RECEIVING
   
   if (Serial.available() > 0) {
-    //set_led_rgb (2, 0, 0, 255) ;
-    //set_led_rgb (10, 0, 0, 255) ;   
+    //Trunk.set_led_rgb (2, 0, 0, 255) ;
+    //Trunk.set_led_rgb (10, 0, 0, 255) ;   
     //delayMicroseconds(10000);
     receive_frame_from_serial_and_treat_values() ;
   }
@@ -548,7 +555,7 @@ void loop ()
     branches[1].run() ;
   }
   else {
-    run_leds() ;
+    Trunk.run_leds() ;
   }
   
   //Serial.print(F("loop end\n")) ;

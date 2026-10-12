@@ -58,6 +58,8 @@ class DriverPlantFORM:
         self.pos_max = [pos_max] * 11
         self.cur_positions = {}
         self.__unserialize_cur_positions()
+        self.supply5 = False
+        self.supply220 = False
 
     def save(self):
         self.__serialize_cur_positions()
@@ -108,41 +110,51 @@ class DriverPlantFORM:
                 
     # Give color to one LED (0 means all LEDs with same color)
     # hour in [1..10]
-    def set_led_color(self, hour, color_hsl):
+    def set_trunk_led_color(self, hour, color_hsl):
         code = 'l'
         h, s, l = color_hsl
         num = self.__hour_to_num(hour)
         self.__send(f'<{code}|{num}|{h}|{s}|{l}>')
 
-    def set_energyshape_gain(self, value):
+    def set_energyshape_gain(self, day, value):
         code = 'g'
-        self.__send(f'<{code}|{value}>')
+        self.__send(f'<{code}|{day}|{value}>')
         
     def set_energyshape_brightness(self, value):
         code = 'B'
         self.__send(f'<{code}|{value}>')
         
-    def wait_led(self, delay_ms):
+    def send_trunk_led_wait_event(self, delay_ms):
         code = 'w'
         self.__send(f'<{code}|{delay_ms}>')
         
     # Give colors to all LEDs
-    def set_leds_colors(self, colors_hsl):
+    def set_trunk_leds_colors(self, colors_hsl):
         code = 'L'
         values = '|'.join('|'.join(str(c) for c in color) for color in colors_hsl)
         #print(values)
         self.__send(f'<{code}|{values}>')
 
-    def blink_led(self, hour, color):
+    def blink_trunk_led_start(self, hour, color):
         code = 'b'
         num = self.__hour_to_num(hour)
         h, s, v = color
         self.__send(f'<{code}|{num}|{h}|{s}|{v}>')
 
-    def blink_led_stop(self, hour):
+    def blink_trunk_led_stop(self, hour):
         code = 's'
         num = self.__hour_to_num(hour)
         self.__send(f'<{code}|{num}>')
+
+    def require_power_supply(self):
+        if self.supply5 and self.supply220:
+            return True
+        else:
+            if not self.supply5:
+                print('requires 5V power supply of motor cards')
+            if not self.supply220:
+                print('requires 200V power supply of motors')
+            return False
         
     def switch_power_supply(self, enable):
         if enable: #-- Turn power on
@@ -150,27 +162,35 @@ class DriverPlantFORM:
             time.sleep(30)
             self.__restore_cur_positions()
             GPIO.output(SWITCH_MOTORS_PIN, GPIO.HIGH)
+            self.supply5 = True
+            self.supply220 = True
         else: #-- Turn power off
             GPIO.output(SWITCH_MOTORS_PIN, GPIO.LOW)
             self.ask_cur_positions()
             time.sleep(0.5)
             GPIO.output(SWITCH_ARDUINO_PIN, GPIO.LOW)
+            self.supply5 = False
+            self.supply220 = False
 
     def switch_power_supply5(self, enable):
         if enable: #-- Turn power on
             GPIO.output(SWITCH_ARDUINO_PIN, GPIO.HIGH)
             time.sleep(30)
             self.__restore_cur_positions()
+            self.supply5 = True
         else: #-- Turn power off
             self.ask_cur_positions()
             time.sleep(0.5)
             GPIO.output(SWITCH_ARDUINO_PIN, GPIO.LOW)
+            self.supply5 = False
 
     def switch_power_supply220(self, enable):
         if enable: #-- Turn power on
             GPIO.output(SWITCH_MOTORS_PIN, GPIO.HIGH)
+            self.supply220 = True
         else: #-- Turn power off
             GPIO.output(SWITCH_MOTORS_PIN, GPIO.LOW)
+            self.supply220 = False
 
     def ask_cur_position(self, num):
         code = 'i'
@@ -190,46 +210,53 @@ class DriverPlantFORM:
             
     # move one motor to a position
     def move_motor_to_position(self, hour, pos10):
-        code = 'm'
-        num = self.__hour_to_num_motor(hour)
-        pos = self.__pos10_to_motor_position(num, pos10)
-        self.__send(f'<{code}|{num}|{pos}>')
+        if self.require_power_supply():
+            code = 'm'
+            num = self.__hour_to_num_motor(hour)
+            pos = self.__pos10_to_motor_position(num, pos10)
+            self.__send(f'<{code}|{num}|{pos}>')
 
     # move all motors to their positions
     def set_motor_position_value(self, hour, pos10):
-        code = 'p'
-        num = self.__hour_to_num_motor(hour)
-        pos = self.__pos10_to_motor_position(num, pos10)
-        self.__send(f'<{code}|{num}|{pos}>')
+        if self.require_power_supply():
+            code = 'p'
+            num = self.__hour_to_num_motor(hour)
+            pos = self.__pos10_to_motor_position(num, pos10)
+            self.__send(f'<{code}|{num}|{pos}>')
         
     # move all motors to their positions
     def move_motors_to_positions(self, positions10):
-        code = 'M'
-        values = '|'.join(str(self.__pos10_to_motor_position(num, positions10[num])) for num in range(0, len(positions10)))
-        #print(values)
-        self.__send(f'<{code}|{values}>')
+        if self.require_power_supply():
+            code = 'M'
+            values = '|'.join(str(self.__pos10_to_motor_position(num, positions10[num])) for num in range(0, len(positions10)))
+            #print(values)
+            self.__send(f'<{code}|{values}>')
         
     def move_motor_to_position_and_send_led_color(self, hour, pos10, color_hsl):
-        code = 'c'
-        h, s, l = color_hsl
-        num = self.__hour_to_num(hour)
-        self.__send(f'<{code}|{num}|{pos}|{h}|{s}|{l}>')
+        if self.require_power_supply():
+            code = 'c'
+            h, s, l = color_hsl
+            num = self.__hour_to_num(hour)
+            self.__send(f'<{code}|{num}|{pos}|{h}|{s}|{l}>')
         
     def move_motors_to_positions_and_send_leds_colors(self, positions10, colors_hsl):
-        code = 'C'
-        values = '|'.join(str(self.__pos10_to_motor_position(num, positions10[num])) for num in range(0, len(positions10)))
-        values += '|' + '|'.join('|'.join(str(c) for c in color) for color in colors_hsl)
-        #print(values)
-        self.__send(f'<{code}|{values}>')
+        if self.require_power_supply():
+            code = 'C'
+            values = '|'.join(str(self.__pos10_to_motor_position(num, positions10[num])) for num in range(0, len(positions10)))
+            values += '|' + '|'.join('|'.join(str(c) for c in color) for color in colors_hsl)
+            #print(values)
+            self.__send(f'<{code}|{values}>')
         
     def reset_motor_to_zero_position(self, hour):
-        code = 'z'
-        num = self.__hour_to_num(hour)
-        self.__send(f'<{code}|{num}>')
+        if self.require_power_supply():
+            code = 'z'
+            num = self.__hour_to_num(hour)
+            self.__send(f'<{code}|{num}>')
         
     def reset_motors_to_zero_position(self):
-        code = 'Z'
-        self.__send(f'<{code}>')
+        if self.require_power_supply():
+            code = 'Z'
+            self.__send(f'<{code}>')
 
     # default 163 (min)
     def set_motors_delay_us(self, delay_us):
@@ -270,9 +297,9 @@ class DriverPlantFORM:
             pos10 = 10
         elif pos10 < 0:
             pos10 = 0
-            pos_steps = self.pos_max[num] - int(self.pos_max[num] * pos10 / 10)
-            pos_steps = pos_steps if pos_steps <= self.pos_max[num] else self.pos_max[num]
-            print(f'position = {pos_steps} steps ')
+        pos_steps = self.pos_max[num] - int(self.pos_max[num] * pos10 / 10)
+        pos_steps = pos_steps if pos_steps <= self.pos_max[num] else self.pos_max[num]
+        print(f'position = {pos_steps} steps ')
         return pos_steps
 
     def __hour_to_num(self, hour):
