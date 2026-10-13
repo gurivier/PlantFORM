@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import time
+import cmd
+
 import DriverPlantFORM as pf
 from DriverPlantFORM import DriverPlantFORM
 
@@ -179,15 +181,17 @@ def treat(PF, msg):
             action = buf[1]
             if action == 'shutdown' or action == 'poweroff' or action == 'off':
                 import os
-                PF.save()
+                PF.switch_power_supply(False)
                 os.system('sudo shutdown -h now')
             elif action == 'reboot':
                 import os
-                PF.save()
+                PF.switch_power_supply(False)
                 os.system('sudo reboot')
+            elif action == 'quit' or action == 'exit' or action == 'stop':
+                return False
             elif action == 'sleep':
-                duration = buf[2]
-                time.sleep(float(duration))
+                duration = float(buf[2])
+                time.sleep(duration)
             elif action == 'supply':
                 enable = (buf[2] == 'on')
                 PF.switch_power_supply(enable)
@@ -200,7 +204,7 @@ def treat(PF, msg):
             elif action == 'variation-play' or action == 'variation-values':
                 index = in_range(int(buf[2]), 0, len(energy_rates))
                 illuminated = (buf[3] == 'light_on') if len(buf) >= 4 else True
-                print(f'set variation {index} {mode}')
+                print(f'set {action} {index} {illuminated}')
                 if action == 'variation-play':
                     play_variation(PF, energy_rates[index], illuminated)
                 elif action == 'variation-values':
@@ -220,7 +224,7 @@ def treat(PF, msg):
                     play_variation(PF, rates, illuminated)
                 elif action == 'update-values':
                     set_variation_values(PF, rates, illuminated)
-                    PF.save()
+                    PF.load()
             elif action == 'fold':
                 hour = int(buf[2])
                 position = int(buf[3])
@@ -269,7 +273,8 @@ def treat(PF, msg):
                     time.sleep(0.03)
     else:
         print('Bad message format.')
-        
+    return True
+
 def run_from_mqtt(host, PF):
     import paho.mqtt.client as mqtt
     import json
@@ -290,7 +295,10 @@ def run_from_mqtt(host, PF):
         print(f'[{databytes.topic}] {msg}')
         if msg[0] == '<': 
             print(datagram)
-            treat(PF, datagram)
+            keep_loop = treat(PF, datagram)
+            if not keep_loop:
+                client.disconnect()
+                client.loop_stop()
         elif msg[0] == '{':
             data = json.loads(msg)
             if data['type'] == 'action':
@@ -300,7 +308,10 @@ def run_from_mqtt(host, PF):
                     params = '|'.join(data['params'])
                     datagram = f'<{prototype_name}|{command}|{params}>'
                     print(datagram)
-                    treat(PF, datagram)
+                    keep_loop = treat(PF, datagram)
+                    if not keep_loop:
+                        client.disconnect()
+                        client.loop_stop()
             elif data['type'] == 'message':
                 if data['dest'] == pname or data['dest'] == '*':                
                     print(data['value'])
@@ -364,19 +375,24 @@ def get_program_parameters():
     
     return args
 
-def run_from_prompt(PF):
-    print('>> PROMPT MODE <<')
-    time.sleep(10)
-    is_running = True 
-    while (is_running):
-        prompt = input('Give bytes: ')
-        if prompt in ('q', 'Q', 'exit', 'quit'):
-            is_running = False
+class RunFromPrompt(cmd.Cmd):
+
+    def __init__(self, PF):
+        cmd.Cmd.__init__(self)
+        self.intro = '>> PROMPT MODE <<'
+        self.prompt = 'Give bytes: '
+        self.PF = PF
+        
+    def default(self, line):
+        line = line.strip()        
+        if line in ('q', 'Q', 'exit', 'quit'):
+            return True
         else:
-            messages = prompt.split('&')
+            messages = line.split('&')
             for message in messages:
                 print(f'Sending command = {message}')
-                treat(PF, message)
+                treat(self.PF, message)
+            return False
                 
 def run_test(PF):
     time.sleep(1)
@@ -475,28 +491,36 @@ def run_test(PF):
     
     #PF.send_microstepping(pf.MS_FULL)
 
-        
+def clean_exit(PF):
+    print('SIGNAL RECEIVED: KeyboardInterrupt => attempting clean exit')
+    PF.switch_power_supply(False)
+    PF.dump()
+
 def main():
     args = get_program_parameters()
     from params import max_positions
     from params import id_number
     
     PF = DriverPlantFORM()
+    PF.load()
     PF.set_motors_delay_us(80)  
     PF.set_microstepping(pf.MS_SIXTEENTH)
     PF.set_max_positions(220)
     for (num, steps) in max_positions:
         PF.set_max_position(num, steps)
-        PF.set_max_failed_steps(500)
-        PF.set_blink_period_ms(200)
+    PF.set_max_failed_steps(500)
+    PF.set_blink_period_ms(200)
 
-    print(PF.pos_max)
+    print(f'pos_max={PF.pos_max}')
     
     if len(vars(args)) > 1:
         if args.subparser_name == 'mqtt':
             from get_ip import get_access_point_ip
             host = args.host[0] if args.host is not None else get_access_point_ip() # '192.168.0.10' # 'rpi-mqtt-server'
-            run_from_mqtt(host, PF)
+            try:
+                run_from_mqtt(host, PF)
+            except KeyboardInterrupt:
+                clean_exit(PF)
         elif args.subparser_name == 'fold':
             position = args.position[0]
             hour = args.hour[0]
@@ -541,8 +565,12 @@ def main():
         else:
             print('Unknown command.')
     else:
-        run_from_prompt(PF)
-        
+        try:
+            RunFromPrompt(PF).cmdloop()
+        except KeyboardInterrupt:
+            clean_exit(PF)
+    clean_exit(PF)
+    
 if __name__ == '__main__':
     import sys
     main()

@@ -1,7 +1,7 @@
 #!/bin/sh
 
-. mqtt_params.sh
-. utils.sh
+. ./mqtt_params.sh
+. ./utils.sh
 
 echodate '>>> Listening to MQTT topic "'"$TOPIC"'" on host "'"$HOST"'"'
 

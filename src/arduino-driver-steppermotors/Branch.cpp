@@ -41,14 +41,6 @@ void Branch::initPins (uint8_t stepPin, uint8_t dirPin, uint8_t speedPin, uint8_
   pinMode(this->stopPin, INPUT_PULLUP) ;
   pinMode(this->enablePin, OUTPUT) ;
 
-#if(DIGITAL_IO_MODE == 2)
-  DIGITAL_INIT_OUTPUT_FAST_IO (this->stepPin, this->stepPinOutReg, this->stepPinBitMask) ;
-  DIGITAL_INIT_OUTPUT_FAST_IO (this->dirPin, this->dirPinOutReg, this->dirPinBitMask) ;
-  DIGITAL_INIT_INPUT_FAST_IO (this->speedPin, this->speedPinInReg, this->speedPinBitMask) ;
-  DIGITAL_INIT_INPUT_FAST_IO (this->stopPin, this->stopPinInReg, this->stopPinBitMask) ;
-  DIGITAL_INIT_OUTPUT_FAST_IO (this->enablePin, this->enablePinOutReg, this->enablePinBitMask) ;
-#endif
-
   this->disableMotor() ;
   this->posSensorStatePrev = this->speedPinDigitalRead() ;
 }

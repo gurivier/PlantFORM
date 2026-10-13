@@ -6,6 +6,25 @@ from serial import Serial
 import termios
 
 import time
+import sys
+
+# verbose sleep
+def sleepv(seconds):
+    import time
+    from math import floor, log10
+    print('Wait ', end='')
+    while seconds >= 0:
+        print(f'{seconds}s', end='')
+        if seconds > 0:        
+            n = floor(log10(seconds))+1
+            sys.stdout.flush()
+            time.sleep(1.0)
+            while n >= 0:
+                print('\b \b', end='')
+                n -= 1
+        else:
+            print('')
+        seconds -= 1
 
 H_RED        =   0
 H_ORANGE     =  32
@@ -57,13 +76,19 @@ class DriverPlantFORM:
         self.serial_port = Serial(port=path, baudrate=baudrate)
         self.pos_max = [pos_max] * 11
         self.cur_positions = {}
-        self.__unserialize_cur_positions()
         self.supply5 = False
         self.supply220 = False
 
-    def save(self):
+    def dump(self):
+        print('Dumping cur_positions:')
+        print(self.cur_positions)
         self.__serialize_cur_positions()
-        
+
+    def load(self):
+        print('Loading cur_positions:')
+        self.__unserialize_cur_positions()
+        print(self.cur_positions)
+
     def wait_end_of_motion(self):
         while True:
             b = self.serial_port.read()
@@ -158,39 +183,55 @@ class DriverPlantFORM:
         
     def switch_power_supply(self, enable):
         if enable: #-- Turn power on
-            GPIO.output(SWITCH_ARDUINO_PIN, GPIO.HIGH)
-            time.sleep(30)
-            self.__restore_cur_positions()
-            GPIO.output(SWITCH_MOTORS_PIN, GPIO.HIGH)
-            self.supply5 = True
-            self.supply220 = True
+            if not self.supply220:
+                print('...enabling 5V')
+                GPIO.output(SWITCH_ARDUINO_PIN, GPIO.HIGH)
+                sleepv(30)
+                self.__restore_cur_positions()
+                self.supply5 = True
+            if not self.supply220:
+                print('...enabling 220V')
+                GPIO.output(SWITCH_MOTORS_PIN, GPIO.HIGH)
+                self.supply220 = True
         else: #-- Turn power off
-            GPIO.output(SWITCH_MOTORS_PIN, GPIO.LOW)
-            self.ask_cur_positions()
-            time.sleep(0.5)
-            GPIO.output(SWITCH_ARDUINO_PIN, GPIO.LOW)
-            self.supply5 = False
-            self.supply220 = False
+            if self.supply220:
+                print('...disabling 220V')
+                GPIO.output(SWITCH_MOTORS_PIN, GPIO.LOW)
+                self.supply220 = False
+            if self.supply5:
+                self.ask_cur_positions()
+                time.sleep(0.5)
+                print('...disabling 5V')
+                GPIO.output(SWITCH_ARDUINO_PIN, GPIO.LOW)
+                self.supply5 = False
 
     def switch_power_supply5(self, enable):
         if enable: #-- Turn power on
-            GPIO.output(SWITCH_ARDUINO_PIN, GPIO.HIGH)
-            time.sleep(30)
-            self.__restore_cur_positions()
-            self.supply5 = True
+            if not self.supply5:
+                print('...enabling 5V')
+                GPIO.output(SWITCH_ARDUINO_PIN, GPIO.HIGH)
+                sleepv(30)
+                self.__restore_cur_positions()
+                self.supply5 = True
         else: #-- Turn power off
-            self.ask_cur_positions()
-            time.sleep(0.5)
-            GPIO.output(SWITCH_ARDUINO_PIN, GPIO.LOW)
-            self.supply5 = False
+            if self.supply5:
+                self.ask_cur_positions()
+                time.sleep(0.5)
+                print('...disabling 5V')
+                GPIO.output(SWITCH_ARDUINO_PIN, GPIO.LOW)
+                self.supply5 = False
 
     def switch_power_supply220(self, enable):
         if enable: #-- Turn power on
-            GPIO.output(SWITCH_MOTORS_PIN, GPIO.HIGH)
-            self.supply220 = True
+            if not self.supply220:
+                print('...enabling 220V')
+                GPIO.output(SWITCH_MOTORS_PIN, GPIO.HIGH)
+                self.supply220 = True
         else: #-- Turn power off
-            GPIO.output(SWITCH_MOTORS_PIN, GPIO.LOW)
-            self.supply220 = False
+            if self.supply220:
+                print('...disabling 220V')
+                GPIO.output(SWITCH_MOTORS_PIN, GPIO.LOW)
+                self.supply220 = False
 
     def ask_cur_position(self, num):
         code = 'i'
@@ -204,10 +245,10 @@ class DriverPlantFORM:
         for num in range(1, 11):
             self.__send(f'<{code}|{num}>')
             (n, p) = self.wait_reply_cur_position()
-            print((n, p), end='')
+            print(f'{(n, p)}', end='')
             self.__record_cur_position(n, p)
-            print('')
-            
+        print('')
+
     # move one motor to a position
     def move_motor_to_position(self, hour, pos10):
         if self.require_power_supply():
@@ -316,9 +357,9 @@ class DriverPlantFORM:
         print('restore cur positions=', end='')
         for num in self.cur_positions:
             pos = self.cur_positions[num]
-            print((num, pos), end='')
+            print(f'{(num, pos)}', end='')
             self.__send(f'<{code}|{num}|{pos}>')
-            print('')
+        print('')
 
     def __serialize_cur_positions(self):
         import pickle

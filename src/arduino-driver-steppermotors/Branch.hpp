@@ -3,16 +3,13 @@
 
 // 0: native
 // 1: fast
-// 2: fastio
-#define DIGITAL_IO_MODE 2
+#define DIGITAL_IO_MODE 1
 
 #include <Arduino.h>
 
 #if(DIGITAL_IO_MODE == 1)
 #include <digitalWriteFast.h>
 #endif
-
-#include "digitalfastio.h"
 
 //-- MACRO CONSTANTS
 
@@ -95,11 +92,9 @@ protected:
   inline void showDigitalIOMode()
   {
 #if(DIGITAL_IO_MODE == 0)
-    Serial.print(F("Arduino\n"));
+    Serial.print(F("Native IO\n"));
 #elif(DIGITAL_IO_MODE == 1)
-    Serial.print(F("Fast\n"));
-#else
-    Serial.print(F("FastIO\n"));
+    Serial.print(F("Fast IO\n"));
 #endif
   }
 
@@ -144,8 +139,6 @@ protected:
     digitalWrite(this->stepPin, val) ;
 #elif(DIGITAL_IO_MODE == 1)
     digitalWriteFast(this->stepPin, val) ;
-#else
-    DIGITAL_WRITE_FAST_IO (this->stepPinOutReg, this->stepPinBitMask, val) ;
 #endif
   }
 
@@ -155,8 +148,6 @@ protected:
     digitalWrite(this->dirPin, val) ;
 #elif(DIGITAL_IO_MODE == 1)
     digitalWriteFast(this->dirPin, val) ;
-#else
-    DIGITAL_WRITE_FAST_IO (this->dirPinOutReg, this->dirPinBitMask, val) ;
 #endif
   }
 
@@ -166,8 +157,6 @@ protected:
     return digitalRead(this->speedPin) ;
 #elif(DIGITAL_IO_MODE == 1)
     return digitalReadFast(this->speedPin) ;
-#else
-    return DIGITAL_READ_FAST_IO (this->speedPinInReg, this->speedPinBitMask) ;
 #endif
   }
 
@@ -177,8 +166,6 @@ protected:
     return digitalRead(this->stopPin) ;
 #elif(DIGITAL_IO_MODE == 1)
     return digitalReadFast(this->stopPin) ;
-#else
-    return DIGITAL_READ_FAST_IO (this->stopPinInReg, this->stopPinBitMask) ;
 #endif
   }
 
@@ -188,8 +175,6 @@ protected:
     digitalWrite(this->enablePin, val) ;
 #elif(DIGITAL_IO_MODE == 1)
     digitalWriteFast(this->enablePin, val) ;
-#else
-    DIGITAL_WRITE_FAST_IO (this->enablePinOutReg, this->enablePinBitMask, val) ;
 #endif
   }
   
@@ -213,22 +198,6 @@ private:
   uint8_t speedPin ;
   uint8_t stopPin ;
   uint8_t enablePin ;
-
-#if(DIGITAL_IO_MODE == 2)
-
-  uint8_t dirPinBitMask ;
-  uint8_t stepPinBitMask ;
-  uint8_t speedPinBitMask ;
-  uint8_t stopPinBitMask ;
-  uint8_t enablePinBitMask ;
-
-  volatile uint8_t *dirPinOutReg ;
-  volatile uint8_t *stepPinOutReg ;
-  volatile uint8_t *speedPinInReg ;
-  volatile uint8_t *stopPinInReg ;
-  volatile uint8_t *enablePinOutReg ;
-  
-#endif
 
   enum STATE state ;
   

@@ -17,6 +17,17 @@ Documentation is released under the [CC BY-SA 4.0](https://creativecommons.org/l
 
 ## Versions' History
 
+* 0.9.5 (2026-10-13)
+  * Keep working with the digitalWriteFast library
+  * Handle prompt with history and line edition
+  * Manage a clean exit that saves leaves' positions to hard drive
+  * Load leaves' positions from hard drive when powering on
+  * Save leaves' positions to hard drive when powering off
+  * Add a test script with the exit command
+* 0.9.4 (2026-10-12)
+  * A new Trunk class now handles the previous LED strip functions
+  * Change the parameters of the variation action (i.e., play and values)
+  * Add a test script to send forecasts' updates (comprising JSON formatting)
 * 0.9.3 (2026-10-09)
   * Fix LEDs' blinking control
   * Update Shell scripts
