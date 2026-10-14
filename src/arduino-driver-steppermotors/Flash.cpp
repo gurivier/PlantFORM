@@ -12,7 +12,7 @@
 
 //-- Variables
 
-unsigned char g_levels[NUM_LEDS] = {
+uint8_t g_levels[NUM_LEDS] = {
   11, // -10 (MIN GAIN)
   12, // -9
   13, 48, // -8
@@ -36,10 +36,9 @@ unsigned char g_levels[NUM_LEDS] = {
   30 // 10 (MAX GAIN)
 };
 
-unsigned char g_levels_indexes[NUM_LEVELS + 1] = {
+uint8_t g_levels_indexes[NUM_LEVELS + 1] = {
   0, 1, 2, 4, 6, 9, 12, 16, 20, 24, 31, 38, 44, 48, 51, 54, 57, 59, 61, 63, 64, 65
 };
-
 
 //-- Constructor
 
@@ -54,19 +53,35 @@ CFlash::CFlash()
 
 //-- Methods
 
-void CFlash::init(unsigned char saturation, unsigned char luminosity)
+void CFlash::init(uint8_t saturation, uint8_t luminosity)
 {  
   m_saturation = saturation;
   m_luminosity = luminosity;
 
-  for (int i = 0; i < NUM_LEDS ; i++) {
+  for (uint8_t i = 0; i < NUM_LEDS ; i++) {
     m_leds[i].setRGB(0, 0, 0);
   }
 
   FastLED.show();
 }
 
-void CFlash::setSaturation(unsigned char value)
+void CFlash::splash()
+{
+  
+  for (int8_t level = -1 ; level >= MIN_GAIN ; level--) {
+    this->setLevel(level, H_BRICK, m_saturation, m_luminosity);
+  }
+
+  this->setLevel(0, H_HONEY, m_saturation, m_luminosity);
+  
+  for (int8_t level = 1 ; level <= MAX_GAIN ; level++) {
+    this->setLevel(level, H_GRASS, m_saturation, m_luminosity);
+  }
+
+  FastLED.show();
+}
+
+void CFlash::setSaturation(uint8_t value)
 {  
   m_saturation = value;
   
@@ -75,7 +90,7 @@ void CFlash::setSaturation(unsigned char value)
   }
 }
 
-void CFlash::setLuminosity(unsigned char value)
+void CFlash::setLuminosity(uint8_t value)
 {  
   m_luminosity = value;
   
@@ -88,14 +103,14 @@ void CFlash::turnLightOff()
 {  
   m_light_on = false;
   
-  for (int i = 0; i < NUM_LEDS ; i++) {
+  for (uint8_t i = 0; i < NUM_LEDS ; i++) {
     m_leds[i].setRGB(0, 0, 0);
   }
 
   FastLED.show();
 }
 
-void CFlash::setGain(char value, bool fade)
+void CFlash::setGain(int8_t value, bool fade)
 {
   if (fade) {
     this->fadeOut();
@@ -120,7 +135,7 @@ void CFlash::setGain(char value, bool fade)
 
 void CFlash::reset()
 {
-  for (int i = 0; i < NUM_LEDS ; i++) {
+  for (uint8_t i = 0; i < NUM_LEDS ; i++) {
     m_leds[i].setRGB(0, 0, 0);
   }
 
@@ -130,13 +145,13 @@ void CFlash::reset()
 void CFlash::update()
 {   
   if (m_gain < 0) {
-    for (int level = -1 ; level >= m_gain ; level--) {
-      this->setLevel(level, H_GRASS, m_saturation, m_luminosity);
+    for (int8_t level = -1 ; level >= m_gain ; level--) {
+      this->setLevel(level, H_BRICK, m_saturation, m_luminosity);
     }
   }
   else if (m_gain > 0) {
-    for (int level = 1 ; level <= m_gain ; level++) {
-      this->setLevel(level, H_BRICK, m_saturation, m_luminosity);
+    for (int8_t level = 1 ; level <= m_gain ; level++) {
+      this->setLevel(level, H_GRASS, m_saturation, m_luminosity);
     }
   }
 
@@ -149,20 +164,20 @@ void CFlash::fadeOut()
 {
   if (m_light_on) {
     if (m_gain < 0) {
-      int step = m_luminosity * 0.1;
-      for (int luminosity = m_luminosity ; luminosity > 0 ; luminosity -= step) {
-        for (int level = -1 ; level >= m_gain ; level--) {
-          this->setLevel(level, H_GRASS, m_saturation, luminosity);
+      uint8_t step = m_luminosity * 0.1;
+      for (uint8_t luminosity = m_luminosity ; luminosity > 0 ; luminosity -= step) {
+        for (int8_t level = -1 ; level >= m_gain ; level--) {
+          this->setLevel(level, H_BRICK, m_saturation, luminosity);
         }
         FastLED.show();
         delay(200);
       }
     }
     else if (m_gain > 0) {
-      int step = m_luminosity * 0.1;
-      for (int luminosity = m_luminosity ; luminosity > 0 ; luminosity -= step) {
-        for (int level = 1 ; level <= m_gain ; level++) {
-          this->setLevel(level, H_BRICK, m_saturation, luminosity);
+      int8_t step = m_luminosity * 0.1;
+      for (uint8_t luminosity = m_luminosity ; luminosity > 0 ; luminosity -= step) {
+        for (int8_t level = 1 ; level <= m_gain ; level++) {
+          this->setLevel(level, H_GRASS, m_saturation, luminosity);
         }
         FastLED.show();
         delay(200);
@@ -174,20 +189,20 @@ void CFlash::fadeOut()
 void CFlash::fadeIn()
 {
   if (m_gain < 0) {
-    int step = m_luminosity * 0.1;
-    for (float luminosity = 0 ; luminosity < m_luminosity ; luminosity += step) {
-      for (int level = -1 ; level >= m_gain ; level--) {
-        this->setLevel(level, H_GRASS, m_saturation, luminosity);
+    uint8_t step = m_luminosity * 0.1;
+    for (uint8_t luminosity = 0 ; luminosity < m_luminosity ; luminosity += step) {
+      for (int8_t level = -1 ; level >= m_gain ; level--) {
+        this->setLevel(level, H_BRICK, m_saturation, luminosity);
       }
       FastLED.show();
       delay(200);
     }
   }
   else if (m_gain > 0) {
-    int step = m_luminosity * 0.1;
-    for (int luminosity = 0 ; luminosity < m_luminosity ; luminosity += step) {
-      for (int level = 1 ; level <= m_gain ; level++) {
-        this->setLevel(level, H_BRICK, m_saturation, luminosity);
+    uint8_t step = m_luminosity * 0.1;
+    for (uint8_t luminosity = 0 ; luminosity < m_luminosity ; luminosity += step) {
+      for (int8_t level = 1 ; level <= m_gain ; level++) {
+        this->setLevel(level, H_GRASS, m_saturation, luminosity);
       }
       FastLED.show();
       delay(200);
@@ -195,12 +210,12 @@ void CFlash::fadeIn()
   }
 }
 
-void CFlash::setLevel(char level, unsigned char h, unsigned char s, unsigned char v)
+void CFlash::setLevel(int8_t level, uint8_t h, uint8_t s, uint8_t v)
 {
-  int j = level + DELTA_FROM_GAIN_TO_LEVEL_INDEX;
+  uint8_t j = level + DELTA_FROM_GAIN_TO_LEVEL_INDEX;
   
-  for (int k = g_levels_indexes[j] ; k < g_levels_indexes[j+1] ; k++) {
-    int i = g_levels[k];
+  for (uint8_t k = g_levels_indexes[j] ; k < g_levels_indexes[j+1] ; k++) {
+    uint8_t i = g_levels[k];
     m_leds[i] = CHSV(h, s, v);
   }
 }

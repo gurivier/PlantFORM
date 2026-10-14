@@ -54,6 +54,7 @@ static FILE uartout = {0} ;
 static int uart_putchar (char c, FILE *stream) {
   Serial.write(c) ;
   Serial.flush() ;
+  delay(2);
   return 0 ;
 }
 #endif
@@ -81,6 +82,7 @@ void ready()
   Serial.print(arduino_id) ;
   Serial.print(F(">")) ;
   Serial.flush() ;
+  delay(4);
 }
 
 void set_microstepping (uint8_t mode) 
@@ -115,6 +117,7 @@ void set_microstepping (uint8_t mode)
   default:
     Serial.print(F("Unknown mode\n")) ;
     Serial.flush() ;
+    delay(4);
     ms1 = HIGH ;
     ms2 = HIGH ;
     ms3 = HIGH ;
@@ -127,6 +130,21 @@ void set_microstepping (uint8_t mode)
 void set_delay_us (uint32_t delay_us)
 {
   Branch::step_period_us = delay_us ;
+}
+
+void print_env()
+{
+  printf("RX buf: %d (must be 512)\n",  SERIAL_RX_BUFFER_SIZE);
+  printf("Pointer size: %d\n", sizeof(void *));
+  printf("int size: %d\n", sizeof(int));
+  printf("short int size: %d\n", sizeof(short int));
+  printf("long int size: %d\n", sizeof(long int));
+  printf("struct led_color size: %d\n", sizeof(struct led_color));
+  printf("struct move_event size: %d\n", sizeof(struct move_event));
+  printf("struct led_event size: %d\n", sizeof(struct led_event));
+  printf("Enum size: %d (must be 1)\n", sizeof(enum LED_EVENT_TYPE));
+  Serial.flush();
+  delay(20);
 }
 
 //-- SETUP
@@ -167,6 +185,8 @@ void setup ()
     Trunk.init_leds() ;
     EnergySHAPE.init();
     EnergySHAPE.setLuminosityForAll(80);
+    EnergySHAPE.splash();
+    delay(4000);
     EnergySHAPE.setGainForAll(0, false);
   }
   else { // Branch boards
@@ -189,16 +209,7 @@ void setup ()
     //set_led_rgb (arduino_id, 0, 0, 255) ;  
   }
 
-  //printf("RX buf: %d (must be 512)\n",  SERIAL_RX_BUFFER_SIZE);
-  //printf("Pointer size: %d\n", sizeof(void *));
-  //printf("int size: %d\n", sizeof(int));
-  //printf("short int size: %d\n", sizeof(short int));
-  //printf("long int size: %d\n", sizeof(long int));
-  //printf("struct led_color size: %d\n", sizeof(struct led_color));
-  //printf("struct move_event size: %d\n", sizeof(struct move_event));
-  //printf("struct led_event size: %d\n", sizeof(struct led_event));
-  //printf("Enum size: %d (must be 1)\n", sizeof(enum LED_EVENT_TYPE));
-
+  //print_env();
 }
 
 //-- LOOP
@@ -220,6 +231,7 @@ void treat_frame_values (int16_t *values)
     if (IS_LED_BOARD()) {
       Serial.print(F("Must blink")) ;
       Serial.flush() ;
+      delay(4);
       Trunk.add_led_start_blink_event(values+1) ;
     }
     break;
@@ -439,6 +451,7 @@ void treat_frame_values (int16_t *values)
     Serial.print(values[0]) ;
     Serial.print(F("\n")) ;
     Serial.flush() ;
+    delay(4);
   } 
 }
 
@@ -464,6 +477,7 @@ void receive_frame_from_serial_and_treat_values ()
       //*pbuf++ = '<' ;
       Serial.print('<');
       Serial.flush() ;
+      delay(2);
       //i = 0 ;
       pt_values = values ;
       sign = 1 ;
@@ -480,6 +494,7 @@ void receive_frame_from_serial_and_treat_values ()
     if ((b = Serial.read()) != '>') {
       Serial.write(b);
       Serial.flush() ;
+      delay(2);
       if (b == '<') {
         //pbuf = buf ;
         //*pbuf++ = '<' ;
@@ -521,6 +536,7 @@ void receive_frame_from_serial_and_treat_values ()
       // Send to next board
       Serial.print('>');
       Serial.flush() ;
+      delay(2);
       //Serial.println(buf) ;
 
       //printf("arduino_id=%d\n", arduino_id) ;
@@ -554,8 +570,8 @@ void loop ()
     branches[0].run() ;
     branches[1].run() ;
   }
-  else {
-    Trunk.run_leds() ;
+  else { // IS_LED_BOARD
+    Trunk.run() ;
   }
   
   //Serial.print(F("loop end\n")) ;

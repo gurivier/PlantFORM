@@ -42,6 +42,8 @@ class CTrunk {
 
 public:
 
+  CTrunk() ;
+  
   void init_leds() ;
 
   // num : 0  =>  all LEDS
@@ -61,7 +63,7 @@ public:
 
   void add_led_wait_event (uint16_t delay_ms) ;
 
-  void run_leds () ;
+  void run () ;
 
 protected:
 
@@ -69,16 +71,18 @@ protected:
 
 private:
 
-  uint16_t blink_period_ms = 400 ;
+  struct pt m_pt ;
+  
+  uint16_t m_blink_period_ms = 400 ;
 
-  HSV colors[NUM_LEDS] ;
-  HSV blinking_colors[NUM_LEDS] ;
-  bool is_blinking[NUM_LEDS] ;
+  HSV m_colors[NUM_LEDS] ;
+  HSV m_blinking_colors[NUM_LEDS] ;
+  bool m_is_blinking[NUM_LEDS] ;
 
-  CRGB leds[NUM_LEDS] ;
+  CRGB m_leds[NUM_LEDS] ;
 
-  LEDEvent firstLEDEvent = NULL ;
-  LEDEvent lastLEDEvent = NULL ;
+  LEDEvent m_firstLEDEvent = NULL ;
+  LEDEvent m_lastLEDEvent = NULL ;
 };
 
 //-- Objects

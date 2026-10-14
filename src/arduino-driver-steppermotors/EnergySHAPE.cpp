@@ -40,50 +40,57 @@ void CEnergySHAPE::init()
 #endif
 }
 
-void CEnergySHAPE::setGainForDay(unsigned char day, char value, bool fade)
+void CEnergySHAPE::splash()
+{
+  for (uint8_t day = 0 ; day < NUM_DAYS ; day++) {
+    flashes[day].splash ();
+  }  
+}
+
+void CEnergySHAPE::setGainForDay(uint8_t day, int8_t value, bool fade)
 {
   flashes[day].setGain (value, fade);
 }
 
-void CEnergySHAPE::setGainForAll(char value, bool fade)
+void CEnergySHAPE::setGainForAll(int8_t value, bool fade)
 {
-  for (int day = 0 ; day < NUM_DAYS ; day++) {
+  for (uint8_t day = 0 ; day < NUM_DAYS ; day++) {
     flashes[day].setGain (value, fade);
   }
 }
 
-void CEnergySHAPE::setSaturationForDay(unsigned char day, char value)
+void CEnergySHAPE::setSaturationForDay(uint8_t day, int8_t value)
 {
   flashes[day].setSaturation (value);
 }
 
-void CEnergySHAPE::setSaturationForAll(char value)
+void CEnergySHAPE::setSaturationForAll(int8_t value)
 {
-  for (int day = 0 ; day < NUM_DAYS ; day++) {
+  for (uint8_t day = 0 ; day < NUM_DAYS ; day++) {
     flashes[day].setSaturation (value);
   }
 }
 
-void CEnergySHAPE::setLuminosityForDay(unsigned char day, char value)
+void CEnergySHAPE::setLuminosityForDay(uint8_t day, int8_t value)
 {
   flashes[day].setLuminosity (value);
 }
 
-void CEnergySHAPE::setLuminosityForAll(char value)
+void CEnergySHAPE::setLuminosityForAll(int8_t value)
 {
-  for (int day = 0 ; day < NUM_DAYS ; day++) {
+  for (uint8_t day = 0 ; day < NUM_DAYS ; day++) {
     flashes[day].setLuminosity (value);
   }
 }
 
-void CEnergySHAPE::turnLightOffForDay(unsigned char day)
+void CEnergySHAPE::turnLightOffForDay(uint8_t day)
 {
   flashes[day].turnLightOff();
 }
 
 void CEnergySHAPE::turnLightOffForAll()
 {
-  for (int day = 0 ; day < NUM_DAYS ; day++) {
+  for (uint8_t day = 0 ; day < NUM_DAYS ; day++) {
     flashes[day].turnLightOff();
   }
 }

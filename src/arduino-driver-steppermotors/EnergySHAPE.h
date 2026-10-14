@@ -27,19 +27,21 @@ public:
   
   void init();
 
-  void setGainForDay(unsigned char day, char value, bool fade); // day in [0 .. NUM_DAYS-1], value in [MIN_GAIN .. MAX_GAIN]
+  void splash();
 
-  void setGainForAll(char value, bool fade); // value in [MIN_GAIN .. MAX_GAIN]
+  void setGainForDay(uint8_t day, int8_t value, bool fade); // day in [0 .. NUM_DAYS-1], value in [MIN_GAIN .. MAX_GAIN]
 
-  void setSaturationForDay(unsigned char day, char value);
+  void setGainForAll(int8_t value, bool fade); // value in [MIN_GAIN .. MAX_GAIN]
 
-  void setSaturationForAll(char value);
+  void setSaturationForDay(uint8_t day, int8_t value);
 
-  void setLuminosityForDay(unsigned char day, char value);
+  void setSaturationForAll(int8_t value);
 
-  void setLuminosityForAll(char value);
+  void setLuminosityForDay(uint8_t day, int8_t value);
 
-  void turnLightOffForDay(unsigned char day);
+  void setLuminosityForAll(int8_t value);
+
+  void turnLightOffForDay(uint8_t day);
 
   void turnLightOffForAll();
 

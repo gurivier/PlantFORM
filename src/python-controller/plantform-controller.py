@@ -2,6 +2,8 @@
 
 import time
 import cmd
+import readline
+import os.path
 
 import DriverPlantFORM as pf
 from DriverPlantFORM import DriverPlantFORM
@@ -92,9 +94,6 @@ energy_rates.append( [ 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1
 #print(energy_rates[2])
 #print(energy_rates[3])
 #print(energy_rates[4])
-
-#exit()
-#quit()
 
 colors = [
     (pf.H_GREEN, 255,   0),
@@ -376,13 +375,21 @@ def get_program_parameters():
     return args
 
 class RunFromPrompt(cmd.Cmd):
-
+    
     def __init__(self, PF):
         cmd.Cmd.__init__(self)
         self.intro = '>> PROMPT MODE <<'
         self.prompt = 'Give bytes: '
         self.PF = PF
-        
+        readline.set_history_length(1000)
+
+    def preloop(self):
+        if os.path.isfile('prompt_history.txt'):
+            readline.read_history_file('prompt_history.txt')
+
+    def postloop(self):
+        readline.write_history_file('prompt_history.txt')
+
     def default(self, line):
         line = line.strip()        
         if line in ('q', 'Q', 'exit', 'quit'):
@@ -492,9 +499,9 @@ def run_test(PF):
     #PF.send_microstepping(pf.MS_FULL)
 
 def clean_exit(PF):
-    print('SIGNAL RECEIVED: KeyboardInterrupt => attempting clean exit')
     PF.switch_power_supply(False)
     PF.dump()
+    print('Bye.')
 
 def main():
     args = get_program_parameters()
@@ -520,6 +527,8 @@ def main():
             try:
                 run_from_mqtt(host, PF)
             except KeyboardInterrupt:
+                print('SIGNAL RECEIVED: KeyboardInterrupt')
+                print('Attempting clean exit')
                 clean_exit(PF)
         elif args.subparser_name == 'fold':
             position = args.position[0]
@@ -568,6 +577,9 @@ def main():
         try:
             RunFromPrompt(PF).cmdloop()
         except KeyboardInterrupt:
+            print('SIGNAL RECEIVED: KeyboardInterrupt')
+            readline.write_history_file('prompt_history.txt')
+            print('Attempting clean exit')
             clean_exit(PF)
     clean_exit(PF)
     

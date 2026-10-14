@@ -19,7 +19,7 @@
 #define NUM_LEDS 65
 #define BRIGHTNESS 80
 #define LED_TYPE WS2812B
-#define COLOR_ORDER RGB
+#define COLOR_ORDER GRB
 #define FASTLED_ALLOW_INTERRUPTS 0
 //#define FASTLED_INTERRUPT_RETRY_COUNT 1
 #define FRAMES_PER_SECOND 60
@@ -48,13 +48,15 @@ public:
 
   inline CRGB_strip &leds() { return m_leds; }
   
-  void init(unsigned char saturation, unsigned char luminosity);
+  void init(uint8_t saturation, uint8_t luminosity);
   
-  void setSaturation(unsigned char value);
+  void splash();
+  
+  void setSaturation(uint8_t value);
 
-  void setLuminosity(unsigned char value);
+  void setLuminosity(uint8_t value);
 
-  void setGain(char value, bool fade); /* gain ranges in [MIN_GAIN ; MAX_GAIN] */
+  void setGain(int8_t value, bool fade); /* gain ranges in [MIN_GAIN ; MAX_GAIN] */
 
   void turnLightOff();
   
@@ -68,15 +70,15 @@ protected:
 
   void fadeIn();
 
-  void setLevel(char level, unsigned char h, unsigned char s, unsigned char v);
+  void setLevel(int8_t level, uint8_t h, uint8_t s, uint8_t v);
 
 private:
   
-  char m_gain ;
+  int8_t m_gain ;
 
-  unsigned char m_saturation;
+  uint8_t m_saturation;
 
-  unsigned char m_luminosity;
+  uint8_t m_luminosity;
 
   bool m_light_on;
 

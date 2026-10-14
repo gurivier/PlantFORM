@@ -52,6 +52,7 @@ void Branch::addEvent (uint16_t posDest)
   if ((evt = (MoveEvent)malloc (sizeof(struct move_event))) == NULL) {
     Serial.print(F("Allocation error\n")) ;
     Serial.flush();
+    delay(4);
   }
   else { 
     evt->posDest = (posDest > this->posMax) ? this->posMax : posDest ;
@@ -144,6 +145,8 @@ void Branch::run ()
       time_end = millis();
       //this->showDigitalIOMode();
       printf("Ellapsed time: %ld ms\n", time_end - time_start);
+      Serial.flush();
+      delay(4);
       this->disableMotor() ;
       POP_EVENT(MoveEvent, this->firstEvent) ;
       //set_led (2, 255, 0, 0) ; // R

@@ -1,0 +1,10 @@
+<plantform1|gain|0|5>
+<plantform1|supply|on>
+<plantform1|reset|0>
+<plantform1|init|0>
+<plantform1|variation-play|1>
+<plantform1|supply|off>
+<plantform1|supply|on>
+<plantform1|variation-play|0>
+<plantform1|supply|off>
+<plantform1|quit>
