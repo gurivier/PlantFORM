@@ -2,8 +2,7 @@
 
 . ./mqtt_params.sh
 . ./utils.sh
-
-pname='plantform1'
+. ./pname.sh
 
 echodate "[$pname] Power supply 5V ON"
 

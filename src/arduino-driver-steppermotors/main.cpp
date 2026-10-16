@@ -134,14 +134,14 @@ void set_delay_us (uint32_t delay_us)
 
 void print_env()
 {
-  printf("RX buf: %d (must be 512)\n",  SERIAL_RX_BUFFER_SIZE);
-  printf("Pointer size: %d\n", sizeof(void *));
-  printf("int size: %d\n", sizeof(int));
-  printf("short int size: %d\n", sizeof(short int));
-  printf("long int size: %d\n", sizeof(long int));
-  printf("struct led_color size: %d\n", sizeof(struct led_color));
-  printf("struct move_event size: %d\n", sizeof(struct move_event));
-  printf("struct led_event size: %d\n", sizeof(struct led_event));
+  printf("RX buf: %d (must be 512)\n", SERIAL_RX_BUFFER_SIZE);
+  printf("Pointer size: %d (2)\n", sizeof(void *));
+  printf("int size: %d (2)\n", sizeof(int));
+  printf("short int size: %d (2)\n", sizeof(short int));
+  printf("long int size: %d (4)\n", sizeof(long int));
+  printf("struct led_color size: %d (4)\n", sizeof(struct led_color));
+  printf("struct move_event size: %d (4)\n", sizeof(struct move_event));
+  printf("struct led_event size: %d (8)\n", sizeof(struct led_event));
   printf("Enum size: %d (must be 1)\n", sizeof(enum LED_EVENT_TYPE));
   Serial.flush();
   delay(20);
@@ -209,7 +209,9 @@ void setup ()
     //set_led_rgb (arduino_id, 0, 0, 255) ;  
   }
 
-  //print_env();
+  if (IS_LED_BOARD()) {
+    print_env();
+  }
 }
 
 //-- LOOP
@@ -468,16 +470,23 @@ void receive_frame_from_serial_and_treat_values ()
   
   //Serial.print(F("find first char\n")) ;
 
+  b = Serial.read();
+  
+  // Send to next board
+  Serial.write(b);
+  Serial.flush() ;
+  delay(2);
+  
   if (!is_reading) {
     // Seek start
     //while ((b = Serial.read()) != '<') ;
-    if ((b = Serial.read()) == '<') {
+    if (b == '<') {
       is_reading = true ;
       //pbuf = buf ;
       //*pbuf++ = '<' ;
-      Serial.print('<');
-      Serial.flush() ;
-      delay(2);
+      //Serial.print('<');
+      //Serial.flush() ;
+      //delay(2);
       //i = 0 ;
       pt_values = values ;
       sign = 1 ;
@@ -491,10 +500,10 @@ void receive_frame_from_serial_and_treat_values ()
     //Trunk.set_led_rgb (4, 0, 0, 255) ;
     
     // Read values
-    if ((b = Serial.read()) != '>') {
-      Serial.write(b);
-      Serial.flush() ;
-      delay(2);
+    if (b != '>') {
+      //Serial.write(b);
+      //Serial.flush() ;
+      //delay(2);
       if (b == '<') {
         //pbuf = buf ;
         //*pbuf++ = '<' ;
@@ -534,9 +543,9 @@ void receive_frame_from_serial_and_treat_values ()
       is_reading = false ;
 
       // Send to next board
-      Serial.print('>');
-      Serial.flush() ;
-      delay(2);
+      //Serial.print('>');
+      //Serial.flush() ;
+      //delay(2);
       //Serial.println(buf) ;
 
       //printf("arduino_id=%d\n", arduino_id) ;

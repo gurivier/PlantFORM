@@ -2,39 +2,38 @@
 
 . ./mqtt_params.sh
 . ./utils.sh
-
-pname='plantform1'
+. ./pname.sh
 
 echodate "[$pname] Set pmax"
 
 #if [ $# -eq 2 ];
 #then
-#    num=$1
+#    hour=$1
 #    pmax=$2
 #else
-#    echo 'Usage: '$0' <num> <pmax>'
+#    echo 'Usage: '$0' <hour> <pmax>'
 #fi
 #
-#mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|"$num"|"$pmax">"
+#mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|"$hour"|"$pmax">"
 
-mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|1|260>"
+mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|8|80>"
 sleep 0.03s
-mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|2|260>"
+mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|9|80>"
 sleep 0.03s
-mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|3|260>"
+mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|10|80>"
 sleep 0.03s
-mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|4|260>"
+mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|11|80>"
 sleep 0.03s
-mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|5|260>"
+mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|12|80>"
 sleep 0.03s
-mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|6|260>"
+mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|13|80>"
 sleep 0.03s
-mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|7|260>"
+mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|14|80>"
 sleep 0.03s
-mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|8|260>"
+mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|15|80>"
 sleep 0.03s
-mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|9|260>"
+mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|16|80>"
 sleep 0.03s
-mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|10|260>"
+mosquitto_pub -h $HOST -q 2 -t "$TOPIC" -m "<"$pname"|pmax|17|80>"
 sleep 0.03s
 

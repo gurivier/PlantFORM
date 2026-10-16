@@ -10,7 +10,7 @@ from DriverPlantFORM import DriverPlantFORM
 
 from in_range import in_range
 
-pname = 'plantform1'
+pname = 'plantform'
 
 #def give_position(rate, factor):
 #    if rate == 1.0 * factor:
@@ -209,8 +209,12 @@ def treat(PF, msg):
                 elif action == 'variation-values':
                     set_variation_values(PF, energy_rates[index], illuminated)
             elif action == 'gain':
-                day = int(buf[2])
-                value = int(buf[3])
+                if len(buf) == 4:
+                    day = int(buf[2])
+                    value = int(buf[3])
+                else:
+                    day = 0
+                    value = int(buf[2])
                 PF.set_energyshape_gain(day, value)
             elif action == 'brightness':
                 value = int(buf[2])
@@ -263,13 +267,14 @@ def treat(PF, msg):
                 PF.set_blink_period_ms(period_ms)
                 time.sleep(0.03)
             elif action == 'pmax':
-                num = int(buf[2])
+                hour = int(buf[2])
                 pos_max = int(buf[3])
-                if num == 0:
+                if hour == 0:
                     PF.set_max_positions(pos_max)
                 else:
-                    PF.set_max_position(num, pos_max)
+                    PF.set_max_position(hour, pos_max)
                     time.sleep(0.03)
+                    print(f'pos_max={PF.pos_max}')
     else:
         print('Bad message format.')
     return True
@@ -504,10 +509,19 @@ def clean_exit(PF):
     print('Bye.')
 
 def main():
-    args = get_program_parameters()
-    from params import max_positions
-    from params import id_number
+    global pname
+    from get_id_number import get_id_number
+    from get_max_positions import get_max_positions
     
+    args = get_program_parameters()
+
+    id_number = get_id_number()
+    pname += str(id_number)
+    
+    print(f'Starting {pname}')
+    
+    max_positions = get_max_positions(pname)
+
     PF = DriverPlantFORM()
     PF.load()
     PF.set_motors_delay_us(80)  

@@ -81,12 +81,12 @@ class DriverPlantFORM:
         self.supply220 = False
 
     def dump(self):
-        print('Dumping cur_positions:')
+        print('Dumping cur_positions from hard drive:')
         print(self.cur_positions)
         self.__serialize_cur_positions()
 
     def load(self):
-        print('Loading cur_positions:')
+        print('Loading cur_positions from hard drive:')
         self.__unserialize_cur_positions()
         print(self.cur_positions)
 
@@ -306,7 +306,8 @@ class DriverPlantFORM:
         self.__send(f'<{code}|{steps}>')
 
     # default: 5500
-    def set_max_position(self, num, steps):
+    def set_max_position(self, hour, steps):
+        num = self.__hour_to_num(hour)
         code = 'x'
         self.pos_max[num] = steps
         self.__send(f'<{code}|{num}|{steps}>')

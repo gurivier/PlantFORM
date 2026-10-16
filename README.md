@@ -17,6 +17,16 @@ Documentation is released under the [CC BY-SA 4.0](https://creativecommons.org/l
 
 ## Versions' History
 
+* 0.9.7 (2026-10-16)
+  * Manage interruption on failed steps
+  * Get prototype name from mac address
+  * Define max_positions for plantform1 and plantform2 devices
+* 0.9.6 (2026-10-14)
+  * Update the class files of EnergySHAPE
+  * Add a splash pattern at start up of EnergySHAPE
+  * Refactor the class files of Trunk
+  * Handle a file to load and save prompt's history 
+  * Refactor DriverPlantFORM.py
 * 0.9.5 (2026-10-13)
   * Keep working with the digitalWriteFast library
   * Handle prompt with history and line edition

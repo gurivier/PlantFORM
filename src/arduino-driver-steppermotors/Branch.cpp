@@ -14,7 +14,7 @@ Branch::Branch ()
     lastEvent(NULL),
     posCur(0),
     posMax(260),
-    maxFailedSteps(5),
+    maxFailedSteps(1000),
     state(STATE_WAIT)
 {
   // Nothing
@@ -71,6 +71,7 @@ bool Branch::move ()
     this->stepPinDigitalWrite(LOW) ;
     delayMicroseconds(Branch::step_period_us) ;
     if (this->arduinoUpdatePos()) {
+      //printf("count_not_moved: %d\n", count_not_moved);
       count_not_moved = 0 ;
     }
     else {
@@ -112,7 +113,8 @@ void Branch::resetToZeroPosition ()
 
 void Branch::run ()
 {
-  static unsigned long time_start, time_end;
+  static unsigned long time_start, time_end, time_move, time_last_move;
+  static bool stop;
   //Serial.print(F("run\n")) ;
 
   // debug
@@ -137,10 +139,16 @@ void Branch::run ()
     //set_led (2, 255, 255, 0) ; // R G
     //Serial.print(F("state STATE_MOVE\n")) ;
     if (this->posCur != this->firstEvent->posDest) {
-      this->move() ;
       //set_led (2, 0, 255, 0) ; // G
+      if (!this->move()) {
+        printf("STOP on MaxFailedSteps.");
+        stop = true;
+      }
     }
     else {
+      stop = true;
+    }
+    if (stop) {
       this->state = STATE_WAIT ;
       time_end = millis();
       //this->showDigitalIOMode();
@@ -155,6 +163,7 @@ void Branch::run ()
   }
   else if (this->firstEvent != NULL) { // STATE_WAIT and EVENT in stack
     this->state = STATE_MOVE ;
+    stop = false;
     this->enableMotor() ;
     time_start = millis();
     //Serial.print(F("state WAITING: new event\n")) ;
