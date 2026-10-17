@@ -2,7 +2,6 @@
 
 import time
 import cmd
-import readline
 import os.path
 
 import DriverPlantFORM as pf
@@ -346,6 +345,9 @@ def get_program_parameters():
     #parser_f = subparsers.add_parser('setup', help='Setup.')    
     #parser_f.add_argument('--position', type=int, nargs=1, required=True, help='Folding position in [1..10].')
     #parser_f.add_argument('--hour', type=int, nargs=1, required=True, help='Hour in [8..17] or 0 for all.')
+
+    # FIND
+    parser_f = subparsers.add_parser('find', help='Assisted finding of pmax.')
     
     # FOLD
     parser_f = subparsers.add_parser('fold', help='Leaf folding.')    
@@ -386,14 +388,6 @@ class RunFromPrompt(cmd.Cmd):
         self.intro = '>> PROMPT MODE <<'
         self.prompt = 'Give bytes: '
         self.PF = PF
-        readline.set_history_length(1000)
-
-    def preloop(self):
-        if os.path.isfile('prompt_history.txt'):
-            readline.read_history_file('prompt_history.txt')
-
-    def postloop(self):
-        readline.write_history_file('prompt_history.txt')
 
     def default(self, line):
         line = line.strip()        
@@ -544,6 +538,34 @@ def main():
                 print('SIGNAL RECEIVED: KeyboardInterrupt')
                 print('Attempting clean exit')
                 clean_exit(PF)
+        elif args.subparser_name == 'find':
+            PF.switch_power_supply5(True)
+            PF.switch_power_supply220(True)
+            pmax_start = 80
+            pmax_stop = 130
+            step = 10
+            pmax = pmax_start
+            is_seeking = True
+            while is_seeking:
+                PF.set_max_position(hour, pmax)
+                time.sleep(0.03)
+                PF.reset_motor_to_zero_position(hour)
+                time.sleep(0.03)
+                PF.move_motor_to_position(hour, 0)
+                time.sleep(0.03)
+                answer = input('Next action (+, -, q, <pmax>): ').strip()
+                if answer == '+':
+                    pmax += step
+                    if pmax > pmax_stop:
+                        is_seeking = False
+                elif answer == '-':
+                    pmax -= step
+                    step = 2
+                    pmax += step
+                elif answer == 'q':
+                    is_seeking = False
+                else:
+                    pmax = int(answer)
         elif args.subparser_name == 'fold':
             position = args.position[0]
             hour = args.hour[0]
@@ -592,7 +614,6 @@ def main():
             RunFromPrompt(PF).cmdloop()
         except KeyboardInterrupt:
             print('SIGNAL RECEIVED: KeyboardInterrupt')
-            readline.write_history_file('prompt_history.txt')
             print('Attempting clean exit')
             clean_exit(PF)
     clean_exit(PF)

@@ -21,6 +21,7 @@ Documentation is released under the [CC BY-SA 4.0](https://creativecommons.org/l
   * Manage interruption on failed steps
   * Get prototype name from mac address
   * Define max_positions for plantform1 and plantform2 devices
+  * Assisted finding of pmax
 * 0.9.6 (2026-10-14)
   * Update the class files of EnergySHAPE
   * Add a splash pattern at start up of EnergySHAPE
