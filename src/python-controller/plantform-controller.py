@@ -544,6 +544,7 @@ def main():
             pmax_start = 80
             pmax_stop = 130
             step = 10
+            hour = input('Give hour: ')
             pmax = pmax_start
             is_seeking = True
             while is_seeking:
@@ -553,7 +554,7 @@ def main():
                 time.sleep(0.03)
                 PF.move_motor_to_position(hour, 0)
                 time.sleep(0.03)
-                answer = input('Next action (+, -, q, <pmax>): ').strip()
+                answer = input('Next action (+, -, q, h, <pmax>): ').strip()
                 if answer == '+':
                     pmax += step
                     if pmax > pmax_stop:
@@ -564,8 +565,14 @@ def main():
                     pmax += step
                 elif answer == 'q':
                     is_seeking = False
+                elif answer == 'h':
+                    hour = input('Give hour: ')
+                    pmax_start = 80
+                    step = 10
                 else:
                     pmax = int(answer)
+            PF.switch_power_supply220(False)
+            PF.switch_power_supply5(False)
         elif args.subparser_name == 'fold':
             position = args.position[0]
             hour = args.hour[0]
