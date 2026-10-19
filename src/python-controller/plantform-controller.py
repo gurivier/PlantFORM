@@ -346,8 +346,8 @@ def get_program_parameters():
     #parser_f.add_argument('--position', type=int, nargs=1, required=True, help='Folding position in [1..10].')
     #parser_f.add_argument('--hour', type=int, nargs=1, required=True, help='Hour in [8..17] or 0 for all.')
 
-    # FIND
-    parser_f = subparsers.add_parser('find', help='Assisted finding of pmax.')
+    # SEEK
+    parser_s = subparsers.add_parser('seek', help='Assisted seeking of pmax.')
     
     # FOLD
     parser_f = subparsers.add_parser('fold', help='Leaf folding.')    
@@ -528,94 +528,92 @@ def main():
 
     print(f'pos_max={PF.pos_max}')
     
-    if len(vars(args)) > 1:
-        if args.subparser_name == 'mqtt':
-            from get_ip import get_access_point_ip
-            host = args.host[0] if args.host is not None else get_access_point_ip() # '192.168.0.10' # 'rpi-mqtt-server'
-            try:
-                run_from_mqtt(host, PF)
-            except KeyboardInterrupt:
-                print('SIGNAL RECEIVED: KeyboardInterrupt')
-                print('Attempting clean exit')
-                clean_exit(PF)
-        elif args.subparser_name == 'find':
-            PF.switch_power_supply5(True)
-            PF.switch_power_supply220(True)
-            pmax_start = 80
-            pmax_stop = 130
-            step = 10
-            hour = input('Give hour: ')
-            pmax = pmax_start
-            is_seeking = True
-            while is_seeking:
-                PF.set_max_position(hour, pmax)
-                time.sleep(0.03)
-                PF.reset_motor_to_zero_position(hour)
-                time.sleep(0.03)
-                PF.move_motor_to_position(hour, 0)
-                time.sleep(0.03)
-                answer = input('Next action (+, -, q, h, <pmax>): ').strip()
-                if answer == '+':
-                    pmax += step
-                    if pmax > pmax_stop:
-                        is_seeking = False
-                elif answer == '-':
-                    pmax -= step
-                    step = 2
-                    pmax += step
-                elif answer == 'q':
+    if args.subparser_name == 'mqtt':
+        from get_ip import get_access_point_ip
+        host = args.host[0] if args.host is not None else get_access_point_ip() # '192.168.0.10' # 'rpi-mqtt-server'
+        try:
+            run_from_mqtt(host, PF)
+        except KeyboardInterrupt:
+            print('SIGNAL RECEIVED: KeyboardInterrupt')
+            print('Attempting clean exit')
+            clean_exit(PF)
+    elif args.subparser_name == 'seek':
+        PF.switch_power_supply5(True)
+        PF.switch_power_supply220(True)
+        pmax_start = 80
+        pmax_stop = 230
+        step = 10
+        hour = int(input('Give hour: '))
+        pmax = pmax_start
+        is_seeking = True
+        while is_seeking:
+            print(f'hour={hour}')
+            PF.set_max_position(hour, pmax)
+            time.sleep(0.03)
+            PF.reset_motor_to_zero_position(hour)
+            time.sleep(0.03)
+            PF.move_motor_to_position(hour, 0)
+            time.sleep(0.03)
+            answer = input('Next action (+, -, q, h, <pmax>): ').strip()
+            if answer == '+':
+                pmax += step
+                if pmax > pmax_stop:
                     is_seeking = False
-                elif answer == 'h':
-                    hour = input('Give hour: ')
-                    pmax_start = 80
-                    step = 10
-                else:
-                    pmax = int(answer)
-            PF.switch_power_supply220(False)
-            PF.switch_power_supply5(False)
-        elif args.subparser_name == 'fold':
-            position = args.position[0]
-            hour = args.hour[0]
-            PF.blink_trunk_led_start(hour, blink_color)
-            PF.move_motor_to_position(hour, position)
-            num = PF.wait_end_of_motion()
-            PF.led_blink_trunk_stop(hour)
-            print(f'motion done: {num}')
-        elif args.subparser_name == 'color':
-            h, s, l = args.color
-            hour = args.hour[0]
-            PF.set_led_color(hour, (h, s, l))
-        elif args.subparser_name == 'reset':
-            hour = args.hour[0]
-            if hour == 0:
-                #for hour in range(8, 18):
-                #    PF.send_reset_motor_to_zero_position(hour)
-                #    num = PF.wait_end_of_motion()
-                #    print(f'reset done: {num}')
-                play_reset(PF)
+            elif answer == '-':
+                pmax -= step
+                step = 2
+                pmax += step
+            elif answer == 'q':
+                is_seeking = False
+            elif answer == 'h':
+                hour = int(input('Give hour: '))
+                pmax = pmax_start
+                step = 10
             else:
-                PF.blink_led(hour, blink_color)
-                PF.reset_motor_to_zero_position(hour)
-        elif args.subparser_name == 'init':
-            hour = args.hour[0]
-            if hour == 0:
-                play_init(PF)
-            else:
-                PF.set_led_color(hour, (0, 0, 0))
-                PF.blink_led(hour, blink_color)
-                PF.move_motor_to_position(hour, 0)
-        elif args.subparser_name == 'variation':
-            index = args.index[0]
-            if index > 6:
-                index = 6
-            elif index < 0:
-                index = 0
-            if args.values:
-                set_variation_values(PF, energy_rates[index], args.illuminated)
-            else:
-                play_variation(PF, energy_rates[index], args.illuminated)
+                pmax = int(answer)
+        PF.switch_power_supply220(False)
+        PF.switch_power_supply5(False)
+    elif args.subparser_name == 'fold':
+        position = args.position[0]
+        hour = args.hour[0]
+        PF.blink_trunk_led_start(hour, blink_color)
+        PF.move_motor_to_position(hour, position)
+        num = PF.wait_end_of_motion()
+        PF.led_blink_trunk_stop(hour)
+        print(f'motion done: {num}')
+    elif args.subparser_name == 'color':
+        h, s, l = args.color
+        hour = args.hour[0]
+        PF.set_led_color(hour, (h, s, l))
+    elif args.subparser_name == 'reset':
+        hour = args.hour[0]
+        if hour == 0:
+            #for hour in range(8, 18):
+            #    PF.send_reset_motor_to_zero_position(hour)
+            #    num = PF.wait_end_of_motion()
+            #    print(f'reset done: {num}')
+            play_reset(PF)
         else:
-            print('Unknown command.')
+            PF.blink_led(hour, blink_color)
+            PF.reset_motor_to_zero_position(hour)
+    elif args.subparser_name == 'init':
+        hour = args.hour[0]
+        if hour == 0:
+            play_init(PF)
+        else:
+            PF.set_led_color(hour, (0, 0, 0))
+            PF.blink_led(hour, blink_color)
+            PF.move_motor_to_position(hour, 0)
+    elif args.subparser_name == 'variation':
+        index = args.index[0]
+        if index > 6:
+            index = 6
+        elif index < 0:
+            index = 0
+        if args.values:
+            set_variation_values(PF, energy_rates[index], args.illuminated)
+        else:
+            play_variation(PF, energy_rates[index], args.illuminated)
     else:
         try:
             RunFromPrompt(PF).cmdloop()
